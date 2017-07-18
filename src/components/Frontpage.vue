@@ -1,5 +1,7 @@
 <template>
-  <h1>Här är framsidan</h1>
+  <div class="container">
+    <h1>Här är framsidan</h1>
+  </div>
 </template>
 
 <script>
@@ -9,5 +11,8 @@ export default {
 </script>
 
 <style scoped>
+.container {
+  display: block;
+}
 
 </style>

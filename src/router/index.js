@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Hello from '@/components/Hello';
+import Books from '@/components/Books';
 import Frontpage from '@/components/Frontpage';
 
 Vue.use(Router);
@@ -9,13 +9,13 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'Frontpage',
+      name: 'frontpage',
       component: Frontpage,
     },
     {
-      path: '/Hello',
-      name: 'Hello',
-      component: Hello,
+      path: '/books',
+      name: 'Books',
+      component: Books,
     },
   ],
 });
