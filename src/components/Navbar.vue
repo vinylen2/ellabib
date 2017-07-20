@@ -2,7 +2,7 @@
   <header class="header">
     <div class="container">
       <router-link to="/">Hem</router-link>
-      <router-link to="/books">Hello</router-link>
+      <router-link to="/books">Böcker</router-link>
     </div>
   </header>
 </template>

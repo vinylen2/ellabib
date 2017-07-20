@@ -7,8 +7,16 @@ export default {
   get(id) {
     return api.get(`books/id/${id}`).then(response => response.data);
   },
-  getAllFromGenre(genres) {
-    return api.get('books', { params: genres }).then(response => response.data);
+  getFromSlug(slug) {
+    return api.get(`books/slug/${slug}`).then(response => response.data);
+  },
+  getAllFromGenres(genreIds) {
+    return api.get('books', {
+      params: {
+        genre: genreIds,
+      },
+    })
+    .then(response => response.data);
   },
   create(data) {
     return api.post('books/', data).then(response => response.data);
