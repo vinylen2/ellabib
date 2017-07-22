@@ -19,7 +19,8 @@ export default {
   width: 100%;
   background-color: #addb91;
   display: block;
-  height: 50px;
+  height: 70px;
+  margin-bottom: 20px;
 }
 
 a {
@@ -27,9 +28,10 @@ a {
   display: block;
   color: black;
   text-align: center;
-  padding: 14px 16px;
+  padding-left: 50px;
   text-decoration: none;
   font-size: 17px;
+  line-height:70px;
 }
 
 </style>
