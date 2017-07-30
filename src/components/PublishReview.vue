@@ -1,14 +1,20 @@
 <template>
   <div class="container">
-    <div class="wrapper">
+    <div class="wrapper" v-if="published">
+      <div class="book-description">
+        <h1>Jippi! Din recension har nu skickats in!</h1>
+      </div>
+    </div>
+    <div class="wrapper" v-if="!published">
       <div class="book-description">
         <h1>Beskrivning</h1>
         <textarea v-model="review.description" placeholder="Skriv vad boken handlar om här."></textarea>
-
+        <vue-record v-bind:source="'description'"></vue-record>
       </div>
       <div class="book-review">
         <h1>Recension</h1>
         <textarea v-model="review.review" placeholder="Skriv din bokrecension här."></textarea>
+        <vue-record v-bind:source="'review'"></vue-record>
         <star-rating v-bind:increment="1"
              v-bind:max-rating="5"
              inactive-color="#c2c7c9"
@@ -17,7 +23,6 @@
             v-model="review.rating">
         </star-rating>
       </div>
-
       <div class="publish">
         <div class="publish-button" @click="postReview">Skicka</div>
       </div>
@@ -29,11 +34,13 @@
 import Books from '@/api/services/books';
 import Reviews from '@/api/services/reviews';
 import StarRating from 'vue-star-rating';
-// import Urls from '@/assets/urls';
+import VueRecord from '@/components/VueRecord';
+import Store from '@/stores/store';
 
 export default {
   name: 'publish-review',
   components: {
+    'vue-record': VueRecord,
     'star-rating': StarRating,
   },
   props: ['book'],
@@ -43,14 +50,27 @@ export default {
       review: {
         description: '',
         review: '',
-        rating: null,
+        rating: 0,
         reviewerId: null,
         bookId: null,
       },
+      published: false,
     };
   },
   created() {
     this.getData();
+  },
+  computed: {
+    reviewFormData() {
+      const reviewFormData = new FormData();
+      const { description, review } = Store.audio;
+      Object.keys(this.review).forEach((key) => {
+        reviewFormData.append(key, this.review[key]);
+      });
+      reviewFormData.append('descriptionRecording', description.blob, this.$route.params.slug);
+      reviewFormData.append('reviewRecording', review.blob, this.$route.params.slug);
+      return reviewFormData;
+    },
   },
   methods: {
     getData() {
@@ -69,9 +89,9 @@ export default {
         });
     },
     postReview() {
-      Reviews.create(this.review)
-        .then((result) => {
-          console.log(result);
+      Reviews.create(this.reviewFormData)
+        .then(() => {
+          this.published = true;
         });
     },
   },
@@ -88,6 +108,7 @@ textarea {
   width: 500px;
   height: 200px;
   outline: none;
+  font-size: 1em;
 }
 
 .publish-button {

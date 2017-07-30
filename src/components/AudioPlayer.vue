@@ -5,7 +5,7 @@
     mixins: [VueHowler],
     data() {
       return {
-        divs: {
+        unicodeIcons: {
           play: '&#9658;',
           pause: '&nbsp;&#9612&#9612',
           reset: '&#8634;',
@@ -23,9 +23,20 @@
 
 <template>
   <div>
-    <div class="button pause" v-if="playing" @click="togglePlayback" v-html="divs.pause"></div>
-    <div class="button" v-else @click="togglePlayback" v-html="divs.play"></div>
-    <div class="button" @click="reset" v-html="divs.reset"></div>
+    <div class="button pause" 
+      v-if="playing" 
+      @click="togglePlayback" 
+      v-html="unicodeIcons.pause">
+    </div>
+    <div class="button"
+      v-else 
+      @click="togglePlayback" 
+      v-html="unicodeIcons.play">
+    </div>
+    <div class="button"
+      @click="reset" 
+      v-html="unicodeIcons.reset">
+    </div>
   </div>
 </template>
 
@@ -42,6 +53,11 @@
   text-align: center;
   display: table-cell;
   vertical-align: middle;
+}
+
+.button:hover {
+  background-color: #71c5e8;
+
 }
 
 .pause {

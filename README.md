@@ -1,4 +1,4 @@
-# ellabib
+# ellabibApp
 
 > client for ellabib
 

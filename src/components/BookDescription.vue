@@ -102,7 +102,9 @@ export default {
     };
   },
   created() {
-    this.getBookFromSlug();
+    setTimeout(() => {
+      this.getBookFromSlug();
+    });
   },
   methods: {
     formattedAudioUrl(endingOfUrl) {
@@ -123,6 +125,7 @@ export default {
     getBookFromSlug() {
       Books.getFromSlug(this.$route.params.slug)
         .then((result) => {
+          console.log(result.data.authors[0].firstname);
           const reviews = result.data.reviews;
           const randomInt = this.randomizeNumber(reviews.length - 1);
           this.currentBook = result.data;
@@ -219,6 +222,10 @@ h2 {
 
 .review-a {
   text-decoration: none;
+}
+
+.review-button:hover {
+  background-color: #f277c6;
 }
 
 dt {

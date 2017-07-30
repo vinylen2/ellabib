@@ -10,6 +10,9 @@ export default {
   getFromSlug(slug) {
     return api.get(`books/slug/${slug}`).then(response => response.data);
   },
+  getFromIsbn(isbn) {
+    return api.get(`books/isbn/${isbn}`).then(response => response.data);
+  },
   getAllFromGenres(genreIds) {
     return api.get('books', {
       params: {

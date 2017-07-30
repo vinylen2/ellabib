@@ -4,6 +4,7 @@ import Books from '@/components/Books';
 import Frontpage from '@/components/Frontpage';
 import BookDescription from '@/components/BookDescription';
 import PublishReview from '@/components/PublishReview';
+import Scanner from '@/components/Scanner';
 
 Vue.use(Router);
 
@@ -30,6 +31,11 @@ export default new Router({
       name: 'publish-review',
       component: PublishReview,
       props: true,
+    },
+    {
+      path: '/scanner',
+      name: 'scanner',
+      component: Scanner,
     },
   ],
 });
