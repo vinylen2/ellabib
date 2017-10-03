@@ -27,7 +27,6 @@
               v-bind:star-size="20"
               v-model="review.rating">
             </star-rating>
-
           </div>
           <div class="review-body">
             <p>{{ review.review }}</p>

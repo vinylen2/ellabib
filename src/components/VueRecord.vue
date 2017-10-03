@@ -23,7 +23,6 @@
       ref="editor"
       v-if="dataUrl.length > 0"
       @cut="updateData"
-      :blob="localBlob"
       :dataUrl="dataUrl"
       :source="source"
       :isEditing="isEditing">
@@ -75,11 +74,10 @@ export default {
       }
     }
   },
-  created() {
-  },
   methods: {
     updateData(blob) {
       this.dataUrl = URL.createObjectURL(blob);
+      this.localBlob = blob;
       this.$emit('updateBlob', blob, this.source);
     },
     startTimer() {
@@ -146,6 +144,7 @@ export default {
 
     },
     stopRecording() {
+      // commented out url in stopRecording
       this._recordRTC.stopRecording(() => {
         this._stream.stop()
         // this.$emit('record:success', url)
@@ -194,7 +193,6 @@ export default {
   text-align: center;
   display: table-cell;
   vertical-align: middle;
-  cursor: pointer;
 }
 
 .counter {
