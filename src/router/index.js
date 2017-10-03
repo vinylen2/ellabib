@@ -5,6 +5,9 @@ import Frontpage from '@/components/Frontpage';
 import BookDescription from '@/components/BookDescription';
 import PublishReview from '@/components/PublishReview';
 import Scanner from '@/components/Scanner';
+import ActivateReviews from '@/components/ActivateReviews';
+import Admin from '@/components/Admin';
+import PostBook from '@/components/PostBook';
 
 Vue.use(Router);
 
@@ -36,6 +39,21 @@ export default new Router({
       path: '/scanner',
       name: 'scanner',
       component: Scanner,
+    },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: Admin,
+    },
+    {
+      path: '/activate-reviews',
+      name: 'activate-reviews',
+      component: ActivateReviews,
+    },
+    {
+      path: '/post-book',
+      name: 'post-book',
+      component: PostBook,
     },
   ],
 });

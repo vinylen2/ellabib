@@ -20,9 +20,13 @@
       v-html="unicodeIcons.play">
     </div> -->
     <audio-editor class="editor"
-      v-if="dataUrl().length > 0"
-      v-bind:source="source"
-      v-bind:isEditing="isEditing">
+      ref="editor"
+      v-if="dataUrl.length > 0"
+      @cut="updateData"
+      :blob="localBlob"
+      :dataUrl="dataUrl"
+      :source="source"
+      :isEditing="isEditing">
     </audio-editor>
   </div>
 </template>
@@ -39,6 +43,7 @@ export default {
     'audio-editor': AudioEditor,
   },
   props: {
+    blob: '',
     source: '',
     options: {
       default() {
@@ -55,10 +60,13 @@ export default {
   },
   data() {
     return {
+      localBlob: this.blob,
+      dataUrl: '',
       Timer: timer(),
       recordingLength: '',
       isRecording: false,
       isEditing: false,
+      newRecording: 0,
       unicodeIcons: {
         play: '&#9658;',
         record: '&#9679;',
@@ -67,29 +75,25 @@ export default {
       }
     }
   },
+  created() {
+  },
   methods: {
+    updateData(blob) {
+      this.dataUrl = URL.createObjectURL(blob);
+      this.$emit('updateBlob', blob, this.source);
+    },
     startTimer() {
       this.Timer.start();
       this.recordingLength = 0;
       this.interval = window.setInterval(() => {
         const time = this.Timer.elapsedTime();
-        console.log(time);
         this.recordingLength = (time / 1000).toFixed(1);
       }, 500);
     },
     stopTimer(blob) {
-      this.saveToStore(blob, this.Timer.stop());
+      this.updateData(blob);
       window.clearInterval(this.interval);
       this.isEditing = true;
-    },
-    dataUrl() {
-      return Store.getDataUrl(this.source);
-    },
-    recordingLength() {
-      return Store.getRecordingLength(this.source);
-    },
-    saveToStore(blob, timerLength) {
-      Store.saveData(this.source, blob, timerLength);
     },
     captureUserMedia(mediaConstraints, successCallback, errorCallback) {
       var isBlackBerry = !!(/BB10|BlackBerry/i.test(navigator.userAgent || ''));
@@ -142,7 +146,6 @@ export default {
 
     },
     stopRecording() {
-      // commented out url in stopRecording
       this._recordRTC.stopRecording(() => {
         this._stream.stop()
         // this.$emit('record:success', url)
@@ -151,7 +154,6 @@ export default {
         // save Blob and Blob URL to Store for API post, playback and editing
         // this.saveToStore(this._recordRTC.getBlob());
         this.stopTimer(this._recordRTC.getBlob());
-
       });
       // removed this to fix getBlob() function above
       // this._recordRTC = null
@@ -170,7 +172,7 @@ export default {
     //   };
     // },
     deleteRecording() {
-      this.saveToStore('');
+      this.isEditing = false;
     },
   },
   destroyed() {
@@ -192,6 +194,7 @@ export default {
   text-align: center;
   display: table-cell;
   vertical-align: middle;
+  cursor: pointer;
 }
 
 .counter {

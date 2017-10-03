@@ -5,6 +5,10 @@
       <router-link to="/books">Böcker</router-link>
       <router-link to ="/scanner"
         v-show="isCordovaApp">Scanner</router-link>
+      <router-link to ="/post-book"
+        v-show="isAdmin">Lägg till bok</router-link>
+      <router-link to ="/activate-reviews"
+        v-show="isAdmin">Aktivera recensioner</router-link>
     </div>
   </header>
 </template>
@@ -17,6 +21,9 @@ export default {
   computed: {
     isCordovaApp() {
       return Store.cordova.isApp;
+    },
+    isAdmin() {
+      return Store.isAdmin;
     },
   },
 };

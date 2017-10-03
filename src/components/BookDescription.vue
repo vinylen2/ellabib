@@ -10,31 +10,39 @@
           <header class="book-header">
             <h1>{{ currentBook.title }}</h1>
             <!-- To-do: link to page with books from author -->
-            <p>av: {{ author.name }} </p>
+             <p>av: {{ author.name }} </p> 
           </header>
           <div class="description-body">
             <p>{{ randomDescription.description }}</p>
-            <audio-player class="description-audio player" :sources="formattedAudioUrl(randomDescription.descriptionAudioUrl)">
-            </audio-player>
-            <router-link class="review-a":to="{ name: 'publish-review', params: { book: currentBook }}">
-              <div class="review-button">&#9733;</div>
-            </router-link>
-            <div class="book-information">
-              <dl>
-                <dt>Genre</dt>
-                <dd>{{ genre.name }}</dd>
-                <dt>Sidor</dt>
-                <dd>{{ currentBook.pages }}</dd>
-                <dt>Betyg</dt>
-                <dd>
+            <div class="buttons">
+              <audio-player class="audio-player" 
+                :sources="formattedAudioUrl(randomDescription.descriptionAudioUrl)">
+              </audio-player>
+              <router-link class="review-a"
+               :to="{ name: 'publish-review', params: { book: currentBook }}">
+                <div class="button review-button">&#9733;</div>
+              </router-link> 
+              <router-link :to="{ name: 'books', params: { genre: genre }}">
+                <img class="genre-icon"
+                  :src="`${imagesUrl}${genre.slug}.png`">
+              </router-link>
+            </div>
+            <div class="book-information flex-container">
+                <div class="flex-left">Genre</div>
+                <div class="flex-right">{{ genre.name }}</div>
+                <div class="flex-left">Sidor</div>
+                <div class="flex-right">{{ currentBook.pages }}</div>
+                <div class="flex-left">Betyg</div>
+                <div class="flex-right">
                   <star-rating v-bind:read-only="true"
                      v-bind:max-rating="5"
                      inactive-color="#c2c7c9"
                      active-color="#c98bdb"
                      v-bind:star-size="20"
+                     :rtl="true"
                      v-model="currentBook.rating">
                   </star-rating>
-                </dd>
+                </div>
               </dl>
             </div>
           </div>
@@ -43,24 +51,29 @@
       <div class="reviews">
         <h2>Recensioner</h2>
         <div v-for="review in reviews" class="review">
-          <header class="review-header">
+          <header class="review-header flex-container">
             <!-- To-do: link to page for reviewer -->
-            <span>Av: recencent </span>
-            <span>den {{ formattedDate(review.createdAt) }}</span>
-              <star-rating v-bind:read-only="true"
-                   v-bind:max-rating="5"
-                   inactive-color="#c2c7c9"
-                   active-color="#c98bdb"
-                   v-bind:star-size="20"
-                   v-model="review.rating">
-              </star-rating>
+            <div class="review-text">
+              <span>
+                Av: recencent den {{ formattedDate(review.createdAt) }} &nbsp;
+              </span>
+            </div>
+            <star-rating class="review-rating" :read-only="true"
+                  :max-rating="5"
+                  inactive-color="#c2c7c9"
+                  active-color="#c98bdb"
+                  :star-size="20"
+                  v-model="review.rating">
+            </star-rating>
           </header>
           <div class="review-body">
             <p>{{ review.review }}</p>
-            <audio-player class="review-audio player" :sources="formattedAudioUrl(review.reviewAudioUrl)">
+            <audio-player class="review-audio player" 
+              :sources="formattedAudioUrl(review.reviewAudioUrl)">
             </audio-player>
           </div>
 
+        <hr>
         </div>
 
       </div>
@@ -78,7 +91,6 @@ import moment from 'moment';
 import 'moment/locale/sv';
 
 export default {
-  name: 'book-description',
   components: {
     'audio-player': AudioPlayer,
     StarRating,
@@ -116,16 +128,9 @@ export default {
     randomizeNumber(max) {
       return Math.floor(Math.random() * (max + 1));
     },
-    getBook(id) {
-      Books.get(id)
-        .then((result) => {
-          this.currentBook = result.data;
-        });
-    },
     getBookFromSlug() {
       Books.getFromSlug(this.$route.params.slug)
         .then((result) => {
-          console.log(result.data.authors[0].firstname);
           const reviews = result.data.reviews;
           const randomInt = this.randomizeNumber(reviews.length - 1);
           this.currentBook = result.data;
@@ -148,7 +153,42 @@ export default {
 
 <style scoped>
 
-.container {
+hr {
+  margin-top: 25px;
+}
+.flex-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.review-header {
+  height: 20px;
+  line-height: 20px;
+  margin-bottom: 10px;
+}
+
+.flex-left {
+  width: 48%;
+  font-weight: bold;
+}
+
+.flex-right {
+  width: 48%;
+  text-align: right;
+}
+
+.genre-icon {
+  border-radius: 100%;
+  width: 70px;
+  cursor: pointer;
+}
+
+.audio-player {
+  float:left;
+}
+
+.buttons {
+  margin: 10px 0px;
 }
 
 .flex-container {

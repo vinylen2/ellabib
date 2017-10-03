@@ -8,34 +8,46 @@
     <div class="wrapper" v-if="!published">
       <div class="book-description">
         <h1>Beskrivning</h1>
-        <textarea v-model="review.description" placeholder="Skriv vad boken handlar om här."></textarea>
-        <vue-record v-bind:source="'description'"></vue-record>
+        <textarea v-model="review.description"
+          placeholder="Skriv vad boken handlar om här.">
+        </textarea>
+        <vue-record 
+          :source="'description'"
+          @updateBlob="updateAudio"
+          :blob="audio.description">
+        </vue-record>
       </div>
       <div class="book-review">
         <h1>Recension</h1>
         <textarea v-model="review.review" placeholder="Skriv din bokrecension här."></textarea>
-        <vue-record v-bind:source="'review'"></vue-record>
-        <star-rating v-bind:increment="1"
-             v-bind:max-rating="5"
-             inactive-color="#c2c7c9"
-             active-color="#c98bdb"
-             v-bind:star-size="30"
-            v-model="review.rating">
-        </star-rating>
+        <vue-record 
+          :source="'review'"
+          @updateBlob="updateAudio"
+          :blob="audio.review">
+        </vue-record>
       </div>
-      <div class="publish">
-        <div class="publish-button" @click="postReview">Skicka</div>
+      <div class="wrapper">
+        <div class="publish">
+          <star-rating :increment="1"
+              :max-rating="5"
+              inactive-color="#c2c7c9"
+              active-color="#c98bdb"
+              :star-size="30"
+              v-model="review.rating">
+          </star-rating>
+          <div class="publish-button" @click="postReview">Skicka</div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+/* es-lint disable*/
 import Books from '@/api/services/books';
 import Reviews from '@/api/services/reviews';
 import StarRating from 'vue-star-rating';
 import VueRecord from '@/components/VueRecord';
-import Store from '@/stores/store';
 
 export default {
   name: 'publish-review',
@@ -54,6 +66,10 @@ export default {
         reviewerId: null,
         bookId: null,
       },
+      audio: {
+        description: '',
+        review: '',
+      },
       published: false,
     };
   },
@@ -63,16 +79,20 @@ export default {
   computed: {
     reviewFormData() {
       const reviewFormData = new FormData();
-      const { description, review } = Store.audio;
       Object.keys(this.review).forEach((key) => {
         reviewFormData.append(key, this.review[key]);
       });
-      reviewFormData.append('descriptionRecording', description.blob, this.$route.params.slug);
-      reviewFormData.append('reviewRecording', review.blob, this.$route.params.slug);
+
+      reviewFormData.append('descriptionRecording', this.audio.description, this.$route.params.slug);
+      reviewFormData.append('reviewRecording', this.audio.review, this.$route.params.slug);
       return reviewFormData;
     },
   },
   methods: {
+    updateAudio(blob, source) {
+      console.log(blob);
+      this.audio[source] = blob;
+    },
     getData() {
       if (!this.book) {
         this.getBookFromSlug();
@@ -102,6 +122,7 @@ export default {
 h1 {
   font-size: 2em;
   font-weight: bold;
+  margin-bottom: 10px;
 }
 
 textarea {
@@ -121,5 +142,18 @@ textarea {
   text-align: center;
   display: table-cell;
   vertical-align: middle;
+  cursor: pointer;
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content:center;
+  align-items:center;
+}
+
+.flex-box {
+  width: 100%;
 }
 </style>

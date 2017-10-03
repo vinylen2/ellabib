@@ -12,6 +12,9 @@
         "cordova-build": "npm run build && cordova build android"
     },
     "dependencies": {
+        "arraybuffer-to-audiobuffer": "0.0.3",
+        "audiobuffer-slice": "0.0.7",
+        "audiobuffer-to-wav": "^1.0.0",
         "axios": "^0.16.2",
         "blob-to-arraybuffer": "0.0.1",
         "cordova-android": "^6.2.3",

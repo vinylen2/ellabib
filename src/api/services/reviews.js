@@ -7,4 +7,10 @@ export default {
   create(data) {
     return api.post('reviews/', data).then(response => response.data);
   },
+  getInactive() {
+    return api.get('reviews/inactive').then(response => response.data);
+  },
+  bulkActivate(data) {
+    return api.patch('reviews/', data).then(response => response.data);
+  },
 };

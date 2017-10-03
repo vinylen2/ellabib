@@ -2,7 +2,7 @@
   <div class="container">
     <div class="scan button"
       v-if="isCordovaApp"
-      @click=barcodeScanner>Tryck här för att scanna.
+      @click="barcodeScanner">Tryck här för att scanna.
     </div>
     <div class="browser"
       v-else>För att kunna scanna efter böcker måste du ha appen.

@@ -7,4 +7,7 @@ export default {
   create(data) {
     return api.post('authors/', data).then(response => response.data);
   },
+  find(data) {
+    return api.post('authors/find', data).then(response => response.data);
+  },
 };

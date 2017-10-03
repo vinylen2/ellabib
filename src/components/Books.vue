@@ -2,14 +2,18 @@
   <div class="container">
     <div class="genre-search">
       <div v-for="genre in genres" class="genre">
-        <img class="genre-icon selected"
+        <img class="genre-icon" 
+          v-on:click="toggleSelected(genre)"
+          v-bind:class="{ selected: selected == genre }"
+          :src="`${imagesUrl}${genre.slug}.png`"/>
+        <!-- <img class="genre-icon selected"
           v-show="genre.selected"
-          v-on:click="addGenreToQuery(genre.id), toggleSelectedProperty(genre)"
+          v-on:click="addGenreToQuery(genre), toggleSelectedProperty(genre)"
           :src="`${imagesUrl}${genre.slug}.png`"/>
         <img class="genre-icon"
           v-show="!genre.selected"
-          v-on:click="addGenreToQuery(genre.id), toggleSelectedProperty(genre)"
-          :src="`${imagesUrl}${genre.slug}.png`"/>
+          v-on:click="addGenreToQuery(genre), toggleSelectedProperty(genre)"
+          :src="`${imagesUrl}${genre.slug}.png`"/> -->
       </div>
     </div>
     <div class="wrapper flex-container">
@@ -33,8 +37,10 @@ import Urls from '@/assets/urls';
 
 export default {
   name: 'books',
+  props: ['genre'],
   data() {
     return {
+      selected: '',
       imagesUrl: Urls.images,
       busy: false,
       books: [],
@@ -45,7 +51,11 @@ export default {
   },
   created() {
     this.getGenres();
-    this.getBooks();
+    if (this.$route.params.genre) {
+      this.addGenreToQuery(this.$route.params.genre);
+    } else {
+      this.getBooks();
+    }
   },
   methods: {
     loadMore() {
@@ -60,32 +70,22 @@ export default {
           });
       }, 1000);
     },
-    toggleSelectedProperty(genreElement) {
-      if (genreElement.selected) {
-        this.genres.forEach((genre) => {
-          genre.selected = false;
-        });
-      } else {
-        this.genres.forEach((genre) => {
-          genre.selected = false;
-        });
-        genreElement.selected = true;
-      }
-    },
-    addGenreToQuery(genreId) {
-      if (this.queryParams.genre[0] === genreId) {
+    addGenreToQuery(genre) {
+      if (this.queryParams.genre[0] === genre.id) {
         this.getBooks();
         this.queryParams.genre.pop();
       } else {
-        this.queryParams.genre[0] = genreId;
+        this.queryParams.genre[0] = genre.id;
         this.getBooksFromGenres();
       }
-      // const arrayIndex = this.queryParams.genre.indexOf(genreId);
-      // if (arrayIndex === -1) {
-      //   this.queryParams.genre.push(genreId);
-      // } else {
-      //   this.queryParams.genre.splice(arrayIndex, 1);
-      // }
+    },
+    toggleSelected(genre) {
+      if (this.selected === genre) {
+        this.selected = '';
+      } else {
+        this.selected = genre;
+      }
+      this.addGenreToQuery(genre);
     },
     getBooksFromGenres() {
       Books.getAllFromGenres(this.$data.queryParams.genre.join(','))
@@ -111,6 +111,13 @@ export default {
       Genres.getAll()
         .then((result) => {
           this.genres = result.data;
+          if (this.$route.params.genre) {
+            this.genres.forEach((genre) => {
+              if (genre.id === this.$route.params.genre.id) {
+                this.selected = genre;
+              }
+            });
+          }
         });
     },
   },
@@ -187,6 +194,7 @@ h3 {
   border-radius: 100%;
   border: 3px solid transparent;
   width: 60px;
+  cursor: pointer;
 }
 
 img.selected {
