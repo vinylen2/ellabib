@@ -9,7 +9,7 @@
 /* eslint no-param-reassign: ["error", { "props": false }]*/
 
 export default {
-  name: 'admin',
+  name: 'login',
   components: {
   },
   data() {

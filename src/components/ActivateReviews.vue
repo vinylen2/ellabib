@@ -2,7 +2,12 @@
   <div class="container">
     <div v-for="review in reviews" class="reviews">
       <div class="image">
-        <img :src="`${imagesUrl}${review.books[0].imageUrl}`">
+        <img class="front-img"
+          v-if="review.books[0].localImage"
+          :src="`${imagesUrl}${review.books[0].imageUrl}`">
+        <img class="front-img"
+          v-if="!review.books[0].localImage"
+          :src="review.books[0].imageUrl">
       </div>
       <div class="flex-container">
         <div class="text-container">
@@ -79,7 +84,7 @@ export default {
     };
   },
   created() {
-    setTimeout(() => {
+    this.$nextTick(() => {
       this.getReviews();
     });
   },

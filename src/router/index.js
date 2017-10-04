@@ -6,8 +6,8 @@ import BookDescription from '@/components/BookDescription';
 import PublishReview from '@/components/PublishReview';
 import Scanner from '@/components/Scanner';
 import ActivateReviews from '@/components/ActivateReviews';
-import Admin from '@/components/Admin';
 import PostBook from '@/components/PostBook';
+import Store from '@/stores/store';
 
 Vue.use(Router);
 
@@ -41,19 +41,28 @@ export default new Router({
       component: Scanner,
     },
     {
-      path: '/admin',
-      name: 'admin',
-      component: Admin,
-    },
-    {
       path: '/activate-reviews',
       name: 'activate-reviews',
       component: ActivateReviews,
+      // beforeEnter(to, from, next) {
+      //   if (Store.isAdmin) {
+      //     next('/activate-reviews');
+      //   } else {
+      //     next('/');
+      //   }
+      // },
     },
     {
       path: '/post-book',
       name: 'post-book',
       component: PostBook,
+      // beforeEnter(to, from, next) {
+      //   if (Store.isAdmin) {
+      //     next('/post-book');
+      //   } else {
+      //     next('/');
+      //   }
+      // },
     },
   ],
 });

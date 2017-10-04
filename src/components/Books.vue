@@ -20,7 +20,11 @@
       <div v-for="book in books" 
         class="book">
         <router-link class ="link" :to="{ name: 'bok', params: { slug: book.slug }}">
-          <img :src="`${imagesUrl}${book.imageUrl}`">
+          <img v-if="book.localImage"
+            :src="`${imagesUrl}${book.imageUrl}`">
+          <img class="front-img"
+            v-if="!book.localImage"
+            :src="book.imageUrl">
           <h3>{{ book.title }}</h3>
         </router-link>
       </div>
@@ -195,6 +199,11 @@ h3 {
   border: 3px solid transparent;
   width: 60px;
   cursor: pointer;
+}
+
+.front-img {
+  width: 200px;
+
 }
 
 img.selected {

@@ -4,7 +4,12 @@
       <div class="description flex-container">
 
         <div class="image">
-          <img :src="`${imagesUrl}${currentBook.imageUrl}`" />
+          <img class="front-img"
+            v-if="currentBook.localImage"
+            :src="`${imagesUrl}${currentBook.imageUrl}`" />
+          <img class="front-img"
+            v-if="!currentBook.localImage"
+            :src="currentBook.imageUrl"/>
         </div>
         <div class="text">
           <header class="book-header">
@@ -114,7 +119,7 @@ export default {
     };
   },
   created() {
-    setTimeout(() => {
+    this.$nextTick(() => {
       this.getBookFromSlug();
     });
   },
@@ -131,14 +136,16 @@ export default {
     getBookFromSlug() {
       Books.getFromSlug(this.$route.params.slug)
         .then((result) => {
-          const reviews = result.data.reviews;
-          const randomInt = this.randomizeNumber(reviews.length - 1);
+          if (result.data.reviews.length > 0) {
+            const reviews = result.data.reviews;
+            const randomInt = this.randomizeNumber(reviews.length - 1);
+            this.reviews = reviews;
+            this.randomDescription = reviews[randomInt];
+          }
           this.currentBook = result.data;
           this.author.name = `${result.data.authors[0].firstname} ${result.data.authors[0].lastname}`;
           this.author.id = result.data.authors[0].id;
           this.genre = result.data.genres[0];
-          this.reviews = reviews;
-          this.randomDescription = reviews[randomInt];
         });
     },
     getReviews(id) {
@@ -270,6 +277,10 @@ h2 {
 
 dt {
   font-weight: bold;
+}
+
+.front-img {
+  width: 200px;
 }
 
 </style>
