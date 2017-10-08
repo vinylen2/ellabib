@@ -3,7 +3,6 @@
 
   export default {
     mixins: [VueHowler],
-    props: ['small'],
     data() {
       return {
         unicodeIcons: {
@@ -24,17 +23,17 @@
 
 <template>
   <div>
-    <div class="button pause"
+    <div class="button-2 pause"
       v-if="playing"
       @click="togglePlayback"
       v-html="unicodeIcons.pause">
     </div>
-    <div class="button"
+    <div class="button-2 "
       v-else
       @click="togglePlayback"
       v-html="unicodeIcons.play">
     </div>
-    <div class="button"
+    <div class="button-2 "
       @click="reset"
       v-html="unicodeIcons.reset">
     </div>
@@ -43,7 +42,7 @@
 
 <style scoped>
 
-.button {
+.button-2  {
   margin-right:5px;
   font-weight: bold;
   font-size: 3em;
@@ -57,7 +56,13 @@
   cursor: pointer;
 }
 
-.button:hover {
+.small div {
+  width: 40px;
+  height: 40px;
+  font-size: 2em;
+}
+
+.button-2:hover {
   background-color: #71c5e8;
 }
 

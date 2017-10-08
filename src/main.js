@@ -1,7 +1,7 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue';
-import Store from '@/stores/store';
+import store from '@/stores/store';
 
 import App from './App';
 import router from './router';
@@ -14,11 +14,11 @@ if (window.location.protocol === 'file:' || window.location.port === '3000') {
   cordovaScript.setAttribute('type', 'text/javascript');
   cordovaScript.setAttribute('src', 'cordova.js');
   document.body.appendChild(cordovaScript);
-  Store.cordova.isApp = true;
+  this.$store.cordova.isApp = true;
 }
 
 function onDeviceReady() {
-  Store.cordova.isActive = true;
+  this.$store.cordova.isActive = true;
 }
 
 function onLoad() {
@@ -28,6 +28,7 @@ function onLoad() {
 
 /* eslint-disable no-new */
 new Vue({
+  store,
   el: '#app',
   router,
   template: '<App/>',

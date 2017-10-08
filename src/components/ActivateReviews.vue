@@ -1,85 +1,118 @@
 <template>
   <div class="container">
+    <modal name="edit-review-audio-modal"
+      :height="1000"
+      @before-open="loadDataAudioModal">
+        <edit-review-audio
+          @close="closeAudioModal"
+          :review="modalReview">
+        </edit-review-audio>
+    </modal>
     <div v-for="review in reviews" class="reviews">
-      <div class="image">
-        <img class="front-img"
-          v-if="review.books[0].localImage"
-          :src="`${imagesUrl}${review.books[0].imageUrl}`">
-        <img class="front-img"
-          v-if="!review.books[0].localImage"
-          :src="review.books[0].imageUrl">
-      </div>
       <div class="flex-container">
-        <div class="text-container">
-          <h1>{{ review.books[0].title }}</h1> 
-          <div class="description-body">
-            <p> {{review.description}} </p>
-            <audio-player class="audio-player" :sources="formattedAudioUrl(review.descriptionAudioUrl)">
-            </audio-player>
-          </div>
+        <div class="image">
+          <img class="front-img"
+            v-if="review.books[0].localImage"
+            :src="`${imagesUrl}${review.books[0].imageUrl}`">
+          <img class="front-img"
+            v-if="!review.books[0].localImage"
+            :src="review.books[0].imageUrl">
         </div>
-        <div class="text-container">
-          <div class="review-header flex-container">
-            <!-- To-do: link to page for reviewer -->
-            <div class="review-title">
-              <span>Av: recencent den {{ formattedDate(review.createdAt) }}</span>
+        <div>
+          <div class="text-container">
+            <h1>{{ review.books[0].title }}</h1> 
+            <div class="review-header flex-container">
+              <!-- To-do: link to page for reviewer -->
+              <div class="review-title">
+                <span>Av: recencent den {{ formattedDate(review.createdAt) }} &nbsp;</span>
+              </div>
+              <star-rating class="review-rating"
+                v-bind:read-only="true"
+                v-bind:max-rating="5"
+                inactive-color="#c2c7c9"
+                active-color="#c98bdb"
+                v-bind:star-size="20"
+                v-model="review.rating">
+              </star-rating>
             </div>
-            <star-rating class="review-rating"
-              v-bind:read-only="true"
-              v-bind:max-rating="5"
-              inactive-color="#c2c7c9"
-              active-color="#c98bdb"
-              v-bind:star-size="20"
-              v-model="review.rating">
-            </star-rating>
+            <div class="description-body">
+              <h2>Beskrivning:</h2>
+              <textarea class="disabled-textarea"
+                v-model="review.description">{{review.description}}</textarea>
+             <audio-player class="audio-player small" 
+                :sources="formattedAudioUrl(review.descriptionAudioUrl)">
+              </audio-player>
+            </div>
           </div>
-          <div class="review-body">
-            <p>{{ review.review }}</p>
-            <audio-player class="audio-player" :sources="formattedAudioUrl(review.reviewAudioUrl)">
-            </audio-player>
+          <div class="text-container">
+            <div class="review-body">
+              <h2>Recension:</h2>
+              <textarea class="disabled-textarea"
+                v-model="review.review">{{review.review}}</textarea>
+              <audio-player class="audio-player small" 
+                :sources="formattedAudioUrl(review.reviewAudioUrl)">
+              </audio-player>
+            </div>
           </div>
         </div>
-        <div class="button accept"
+      </div>
+      <div class="buttons">
+        <div class="button-2 edit"
+          @click="editAudioModal(review)"
+          v-html="unicodeIcons.edit">
+        </div>
+        <div class="button-2 accept"
           v-if="!review.active"
-          @click="toggleAccepted(review)">
+          @click="toggleAccepted(review)"
+          v-html="unicodeIcons.empty">
         </div>
-        <div class="button removeAccept"
+        <div class="button-2 removeAccept"
           v-if="review.active"
           @click="toggleAccepted(review)"
           v-html="unicodeIcons.accepted">
         </div>
-
       </div>
+      <hr>
     </div>
     <div class="publish-button"
-      @click="activateReviews">Aktivera ({{selectedForActivation.length}})
+      @click="activateReviews">Spara ({{selectedForActivation.length}})
     </div>
   </div>
 </template>
 
 <script>
 /* eslint no-param-reassign: ["error", { "props": false }]*/
+import Vue from 'vue';
 import Reviews from '@/api/services/reviews';
 import Urls from '@/assets/urls';
 import StarRating from 'vue-star-rating';
 import AudioPlayer from '@/components/AudioPlayer';
+import EditReviewAudio from '@/components/EditReviewAudio';
 import moment from 'moment';
+import _ from 'lodash';
+import VModal from 'vue-js-modal';
 import 'moment/locale/sv';
+
+Vue.use(VModal);
 
 export default {
   components: {
     AudioPlayer,
     StarRating,
+    EditReviewAudio,
   },
   data() {
     return {
       reviews: [],
+      modalReview: '',
+      modalText: '',
       imagesUrl: Urls.images,
       audioUrl: Urls.audio,
       selectedForActivation: [],
       unicodeIcons: {
         accepted: '&#10004;',
-        deny: 'N',
+        empty: '&nbsp;',
+        edit: '&#x2702',
       },
     };
   },
@@ -89,10 +122,26 @@ export default {
     });
   },
   methods: {
-    toggleActivationArray(reviewId) {
-      const arrayIndex = this.selectedForActivation.indexOf(reviewId);
+    closeAudioModal() {
+      this.popReview(1);
+      this.$modal.hide('edit-review-audio-modal');
+    },
+    popReview(poppedId) {
+      const newList = _.remove(this.reviews, (review =>
+        review.id !== poppedId
+      ));
+      this.reviews = newList;
+    },
+    editAudioModal(review) {
+      this.$modal.show('edit-review-audio-modal', { review });
+    },
+    loadDataAudioModal(event) {
+      this.modalReview = event.params.review;
+    },
+    toggleActivationArray(review) {
+      const arrayIndex = _.findIndex(this.selectedForActivation, { id: review.id });
       if (arrayIndex === -1) {
-        this.selectedForActivation.push(reviewId);
+        this.selectedForActivation.push(review);
       } else {
         this.selectedForActivation.splice(arrayIndex, 1);
       }
@@ -103,7 +152,7 @@ export default {
           review.active = !review.active;
         }
       });
-      this.toggleActivationArray(selectedElement.id);
+      this.toggleActivationArray(selectedElement);
     },
     formattedDate(date) {
       return moment(date).format('Do MMMM');
@@ -117,8 +166,8 @@ export default {
       });
     },
     activateReviews() {
-      Reviews.bulkActivate(this.selectedForActivation).then((result) => {
-        console.log(result.data);
+      Reviews.bulkActivate({ reviews: this.selectedForActivation }).then(() => {
+        this.selectedForActivation = '';
         this.getReviews();
       });
     },
@@ -127,20 +176,57 @@ export default {
 </script>
 
 <style scoped>
-.button {
-  margin: 10px;
+
+hr {
+  margin: 25px 0;
+}
+.button-2 {
+  display: inline-block;
   font-weight: bold;
-  font-size: 3em;
-  width: 70px;
-  height: 70px;
-  line-height: 70px;
+  font-size: 2em;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
   border-radius: 100%;
   background-color: #addb91;
   text-align: center;
   cursor: pointer;
 }
 
+.modal-button-2 {
+  margin: 0 10px;
+  margin-bottom: 10px;
+  padding: 0 5px;
+  width: 150px;
+  height: 2em;
+  line-height: 2em;
+  font-weight: bold;
+  font-size: 1.5em;
+  background-color: #c98bdb;
+  border-radius: 15px;
+  text-align: center;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.close {
+  background-color: #ff585d;
+}
+
+.add {
+  background-color: #71c5e8;
+}
+
+.menu {
+  display: inline-block;
+}
+
+.modal-menu {
+  margin-left: 25%;
+}
+
 .publish-button {
+  display: inline-block;
   padding: 0 5px;
   width: 150px;
   height: 2em;
@@ -164,15 +250,15 @@ export default {
 }
 
 .image {
-  width: 20%;
-  float: left;
+  margin-right: 20px;
 }
 
 img {
-  width: 100%;
+  width: 200px;
 }
 
 .text-container {
+  display:block;
   text-align: left;
   margin: 0 20px;
 }
@@ -185,4 +271,34 @@ img {
 .audio-player {
   margin: 10px 0;
 }
+
+.reviews {
+  margin: 20px 40px;
+}
+
+h1 {
+  font-size: 2em;
+  font-weight:bold;
+}
+
+h2 {
+  font-weight: bold;
+}
+
+.disabled-textarea {
+  width: 500px;
+  height: 100px;
+  resize: none;
+}
+
+.disabled-textarea:hover {
+  border-color: black;
+}
+
+.modal-textarea {
+  width: 500px;
+  height: 100px;
+  resize: none;
+}
+
 </style>

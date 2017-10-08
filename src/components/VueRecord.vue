@@ -1,5 +1,5 @@
 <template>
-  <div class="audio-recorder">
+  <div>
     <div class="button stop"
       v-show="isRecording"
       @click="stopRecording"
@@ -181,24 +181,22 @@ export default {
 
 </script>
 
-<style scoped>
+<style>
 .button {
   margin: 10px;
   font-weight: bold;
   font-size: 3em;
+  line-height: 70px;
   width: 70px;
   height: 70px;
   border-radius: 100%;
   background-color: #9ddad8;
   text-align: center;
-  display: table-cell;
-  vertical-align: middle;
 }
 
 .counter {
   font-size: 2em;
 }
-
 .record {
   font-size: 4em;
   color: #ff585d;

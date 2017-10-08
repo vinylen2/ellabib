@@ -1,28 +1,31 @@
 <template>
-  <div class="container flex-box">
-    <div class="button"
-      v-if="!isPlaying"
-      @click="play"
-      v-html="unicodeIcons.play">
+  <div class="editor">
+    <div class="menu">
+      <div class="button"
+        v-if="!isPlaying"
+        @click="play"
+        v-html="unicodeIcons.play">
+      </div>
+      <div class="button"
+        v-if="isPlaying"
+        @click="pause">P
+      </div>
+      <div class="button time"
+        v-show="isEditing">
+        {{roundedTime}}
+      </div>
+      <div class="button edit"
+        v-html="unicodeIcons.edit"
+        @click="cutBlob">
+      </div>
+      <div class="button undo"
+        v-if="history.length > 0"
+        v-html="unicodeIcons.undo"
+        @click="undoSlice">
+      </div>
     </div>
-    <div class="button"
-      v-if="isPlaying"
-      @click="pause">P
-    </div>
-    <div class="button"
-      v-show="isEditing">
-      {{roundedTime}}
-    </div>
-    <div class="button edit"
-      v-html="unicodeIcons.edit"
-      @click="cutBlob">
-    </div>
-    <div class="button undo"
-      v-if="history.length > 0"
-      v-html="unicodeIcons.undo"
-      @click="undoSlice">
-    </div>
-    <div :id="waveformId"
+    <div class="waveform"
+      :id="waveformId"
       @click="setTime">
     </div>
   </div>
@@ -105,7 +108,7 @@ export default {
       const blob = new Blob([new DataView(wav)], {
         type: 'audio/wav',
       });
-      this.$emit('cut', blob);
+      this.$emit('cut', blob, this.source);
     },
     initiateWavesurfer() {
       this.wavesurfer = WaveSurfer.create({
@@ -119,13 +122,14 @@ export default {
       });
       this.wavesurfer.load(this.dataUrl);
       this.wavesurfer.on('ready', () => {
+        const duration = this.wavesurfer.getDuration();
         this.wavesurfer.addRegion({
           id: 1,
-          start: 0.2,
-          end: 1.0,
+          start: duration * 0.05,
+          end: duration * 0.95,
           resize: true,
           drag: false,
-          color: 'rgba(0, 0, 0, 0)',
+          color: 'rgba(0, 0, 0, 0.3)',
         });
       });
     },
@@ -157,23 +161,36 @@ export default {
 
 </script>
 
-<style>
+<style scoped>
+
 .button {
   margin: 10px;
   font-weight: bold;
   font-size: 2em;
+  line-height: 70px;
   width: 70px;
   height: 70px;
   border-radius: 100%;
   background-color: #9ddad8;
   text-align: center;
-  display: table-cell;
-  vertical-align: middle;
-  cursor: pointer;
+  display: inline-block;
 }
 
-.wavesurfer-handle {
-  background-color: black;
-  max-width: 10px;
+.time {
+  font-size: 2em;
 }
+.wavesurfer-handle {
+  background-color: grey;
+  width: 10%;
+  max-width: 50px;
+}
+
+.editor {
+  font-size: 0.8em;
+}
+
+.waveform {
+  display:block;
+}
+
 </style>

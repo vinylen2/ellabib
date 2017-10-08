@@ -7,7 +7,7 @@ import PublishReview from '@/components/PublishReview';
 import Scanner from '@/components/Scanner';
 import ActivateReviews from '@/components/ActivateReviews';
 import PostBook from '@/components/PostBook';
-import Store from '@/stores/store';
+// import Store from '@/stores/store';
 
 Vue.use(Router);
 

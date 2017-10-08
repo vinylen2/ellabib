@@ -19,18 +19,18 @@
           </header>
           <div class="description-body">
             <p>{{ randomDescription.description }}</p>
-            <div class="buttons">
+            <div class="buttons flex-container">
               <audio-player class="audio-player" 
                 :sources="formattedAudioUrl(randomDescription.descriptionAudioUrl)">
               </audio-player>
-              <router-link class="review-a"
-               :to="{ name: 'publish-review', params: { book: currentBook }}">
-                <div class="button review-button">&#9733;</div>
-              </router-link> 
               <router-link :to="{ name: 'books', params: { genre: genre }}">
                 <img class="genre-icon"
                   :src="`${imagesUrl}${genre.slug}.png`">
               </router-link>
+              <router-link class="review-a"
+               :to="{ name: 'publish-review', params: { book: currentBook }}">
+                <div class="button review-button">&#9733;</div>
+              </router-link> 
             </div>
             <div class="book-information flex-container">
                 <div class="flex-left">Genre</div>
@@ -45,6 +45,7 @@
                      active-color="#c98bdb"
                      v-bind:star-size="20"
                      :rtl="true"
+                     :increment="0.5"
                      v-model="currentBook.rating">
                   </star-rating>
                 </div>
@@ -136,6 +137,7 @@ export default {
     getBookFromSlug() {
       Books.getFromSlug(this.$route.params.slug)
         .then((result) => {
+          console.log(result);
           if (result.data.reviews.length > 0) {
             const reviews = result.data.reviews;
             const randomInt = this.randomizeNumber(reviews.length - 1);
@@ -158,7 +160,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 
 hr {
   margin-top: 25px;
@@ -195,7 +197,8 @@ hr {
 }
 
 .buttons {
-  margin: 10px 0px;
+  align-items:center;
+  margin: 10px 0;
 }
 
 .flex-container {

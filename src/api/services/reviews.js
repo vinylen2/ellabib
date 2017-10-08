@@ -13,4 +13,7 @@ export default {
   bulkActivate(data) {
     return api.patch('reviews/', data).then(response => response.data);
   },
+  editReviewAudio(data) {
+    return api.patch('reviews/audio/edit', data).then(response => response.data);
+  },
 };

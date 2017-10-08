@@ -9,71 +9,186 @@
       </div>
     </div>
     <div class="menu">
-      <div class="button"
-        v-if="cordova.isApp"
+      <div class="button float"
+        v-if="isCordovaApp"
         @click="barcodeScanner">Scanna
       </div>
-      <div class="button"
+      <div class="button float"
         @click="toggleManualIsbn">Ange ISBN
       </div>
-      <div class="button"
+      <div class="button float"
         @click="toggleManualPost">Mata in...
       </div>
     </div>
-    <div class="manual-isbn"
+    <form class="manual isbn flex-container"
+      @submit.prevent="validateBeforeSubmitManualIsbn"
       v-if="manualIsbn">
-      <input v-model="isbn"
-        placeholder="ISBN">
-      <div class="button"
-        @click="postIsbn">Lägg till
-      </div>
-    </div>
-    <div class="manual-post"
+        <div class="flex-left">
+          Genre
+        </div>
+        <div class="flex-right">
+          <input v-model="selectedGenre.name"
+            :class="{'has-error': errors.has('genre') }"
+            placeholder="Välj i listan ovan"
+            disabled>
+          <input v-model="selectedGenre.name"
+            v-validate="'required'"
+            name="genre"
+            type="hidden">
+        </div>
+        <div class="flex-left">
+          ISBN
+        </div>
+        <div class="flex-right">
+          <input v-model="isbn"
+            :class="{'has-error': errors.has('isbn') }"
+            v-validate="'required'"
+            name="isbn"
+            placeholder="ISBN">
+        </div>
+        <div class="flex-box">
+          <button class="button add"
+            type="submit">Lägg till
+          </button>
+        </div>
+    </form>
+    <form class="manual post flex-container"
+      @submit.prevent="validateBeforeSubmitManualBook"
       v-if="manualPost">
-      <input v-model="isbn"
-        placeholder="ISBN">
-      <input v-model="manualData.title"
-        placeholder="Titel">
-      <input v-model="manualData.pages"
-        placeholder="Antal sidor">
-      <select v-model="authorId"
-        name="Författare">
-        <option v-for="author in authors" class="authors"
-          :selected="authorId == author.id ? true : false"
-          :value="`${author.id}`">{{author.fullName}}
-        </option>
-      </select>
-      <button v-if="authorSelect"
-        @click="toggleAuthorSelect">Lägg till ny författare
-      </button>
-      <div class="add author"
-        v-if="!authorSelect">
-        <input v-model="newAuthor.firstname"
-          placeholder="Förnamn">
-        <input v-model="newAuthor.lastname"
-          placeholder="Efternamn">
-        <button
-          @click="addAuthor">Lägg till ny författare
+      <div class="flex-left">
+        Genre
+      </div>
+      <div class="flex-right">
+        <input v-model="selectedGenre.name"
+          :class="{'has-error': errors.has('genre') }"
+          placeholder="Välj i listan ovan"
+          disabled>
+        <input v-model="selectedGenre.name"
+          v-validate="'required'"
+          name="genre"
+          type="hidden">
+      </div>
+      <div class="flex-left">
+        ISBN
+      </div>
+      <div class="flex-right">
+        <input v-model="isbn"
+          :class="{'has-error': errors.has('isbn') }"
+          v-validate="'required'"
+          name="isbn"
+          placeholder="ISBN">
+      </div>
+      <div class="flex-left">
+        Titel
+      </div>
+      <div class="flex-right">
+        <input v-model="manualData.title"
+          :class="{'has-error': errors.has('title') }"
+          v-validate="'required'"
+          name="title"
+          placeholder="Titel">
+      </div>
+      <div class="flex-left">
+        Sidor
+      </div>
+      <div class="flex-right">
+        <input v-model="manualData.pages"
+          :class="{'has-error': errors.has('pages') }"
+          v-validate="'required'"
+          name="pages"
+          placeholder="Antal sidor">
+      </div>
+      <div class="flex-left"
+        v-if="authorSelect">
+        Författare
+        <button class="plus"
+          @click="addAuthorModal">Ny författare
         </button>
       </div>
-      <div class="button"
-        @click="postManual">Lägg till
+      <div class="flex-right"
+        v-if="authorSelect">
+        <v-select class="select-style"
+          :value="authorId"
+          :options="authors"
+          label="fullName">
+        </v-select>
       </div>
+      <modal name="add-author"
+        :height="250">
+        <div class="add-author flex-box">
+          <h3>Ny författare</h3>
+          <div class="flex-container">
+              <div class="flex-left-modal">
+                Förnamn
+              </div>
+              <div class="flex-right">
+                <input v-model="newAuthor.firstname"
+                  placeholder="Förnamn">
+              </div>
+              <div class="flex-left-modal">
+                Efternamn
+              </div>
+              <div class="flex-right">
+                <input v-model="newAuthor.lastname"
+                  placeholder="Efternamn">
+              </div>
+              <div class="modal-menu">
+                <div class="button add"
+                  @click="saveAuthor">Spara
+                </div>
+                <div class="button float close"
+                  @click="leaveModal">Stäng
+                </div>
+              </div>
+          </div>
+        </div>
+      </modal>
+      <div class="flex-box">
+        <button class="button add"
+          type="submit">Lägg till
+        </button>
+      </div>
+    </form>
+    <div class="published-message"
+      v-if="posted">Bok tillagd.
     </div>
   </div>
 </template>
 
 
 <script>
+import Vue from 'vue';
+import VeeValidate from 'vee-validate';
+import vSelect from 'vue-select';
 import Books from '@/api/services/books';
 import Genres from '@/api/services/genres';
 import Authors from '@/api/services/authors';
 import Urls from '@/assets/urls';
-import Store from '@/stores/store';
+import VModal from 'vue-js-modal';
 // import Urls from '@/assets/urls';
+
+Vue.use(VModal);
+Vue.use(VeeValidate);
 
 export default {
   name: 'post-book',
+  components: {
+    vSelect,
+  },
+  computed: {
+    isCordovaApp() {
+      return this.$store.state.cordova.isApp;
+    },
+    isCordovaActive() {
+      return this.$store.state.cordova.active;
+    },
+    isAdmin() {
+      return this.$store.state.isAdmin;
+    },
+    genreId() {
+      return this.selectedGenre.id;
+    },
+  },
   data() {
     return {
       selectedGenre: '',
@@ -94,17 +209,7 @@ export default {
       manualPost: false,
       posted: false,
       imagesUrl: Urls.images,
-      isAdmin: Store.isAdmin,
-      cordova: {
-        isApp: Store.cordova.isApp,
-        isActive: Store.cordova.isActive,
-      },
     };
-  },
-  computed: {
-    genreId() {
-      return this.selectedGenre.id;
-    },
   },
   created() {
     this.$nextTick(() => {
@@ -112,17 +217,46 @@ export default {
     });
   },
   methods: {
-    addAuthor() {
+    validateBeforeSubmitManualIsbn() {
+      this.$validator.validateAll();
+      if (!this.errors.any()) {
+        this.publishBookFromManualInput(
+          this.isbn,
+          this.genreId,
+          this.manualData.title,
+          this.manualData.pages,
+          this.authorId,
+          'nopicture.png',
+        );
+      }
+    },
+    validateBeforeSubmitManualBook() {
+      this.$validator.validateAll();
+      if (!this.errors.any()) {
+        this.publishBookFromIsbn(this.isbn, this.genreId);
+      }
+    },
+    saveAuthor() {
       this.postAuthor(this.newAuthor.firstname, this.newAuthor.lastname);
     },
-    toggleAuthorSelect() {
-      this.authorSelect = !this.authorSelect;
+    addAuthorModal() {
+      this.$modal.show('add-author');
+    },
+    leaveModal() {
+      this.$modal.hide('add-author');
     },
     toggleManualPost() {
       this.getAuthors();
+      this.posted = false;
+      this.manualData.title = '';
+      this.manualData.pages = '';
+      this.isbn = '';
+      this.manualIsbn = false;
       this.manualPost = !this.manualPost;
     },
     toggleManualIsbn() {
+      this.posted = false;
+      this.manualPost = false;
       this.manualIsbn = !this.manualIsbn;
     },
     toggleselectedGenre(genre) {
@@ -132,24 +266,18 @@ export default {
         this.selectedGenre = genre;
       }
     },
-    postManual() {
-      this.publishBookFromManualInput(
-        this.isbn,
-        this.genreId,
-        this.manualData.title,
-        this.manualData.pages,
-        this.authorId,
-        'nopicture.png',
-      );
-    },
-    postIsbn() {
-      this.publishBookFromIsbn(this.isbn, this.genreId);
+    bookPosted() {
+      this.posted = true;
+      this.manualData.title = '';
+      this.manualData.pages = '';
+      this.isbn = '';
+      this.manualPost = false;
     },
     barcodeScanner() {
       window.cordova.plugins.barcodeScanner.scan((result) => {
         this.isbn = result.text;
         this.publishBookFromIsbn(result.text, this.genreId).then(() => {
-          console.log('posted');
+          this.bookPosted();
         });
       }, (error) => {
         alert(`Scanning failed: ${error}`);
@@ -158,15 +286,17 @@ export default {
     publishBookFromIsbn(isbn, genreId) {
       Books.publishBookFromIsbn(isbn, genreId)
         .then((result) => {
-          this.posted = true;
-          console.log(result);
+          if (!result.added) {
+            console.log(result.message);
+          } else {
+            this.bookPosted();
+          }
         });
     },
     publishBookFromManualInput(isbn, genreId, title, pages, authorId, imageUrl) {
       Books.publishBookFromManualInput(isbn, genreId, title, pages, authorId, imageUrl)
-        .then((result) => {
-          this.posted = true;
-          console.log(result);
+        .then(() => {
+          this.bookPosted();
         });
     },
     postAuthor(firstname, lastname) {
@@ -175,6 +305,7 @@ export default {
           this.authors.push(result.data);
           this.authorId = result.data.id;
           this.authorSelect = true;
+          this.$modal.hide('add-author');
         });
     },
     getGenres() {
@@ -194,17 +325,48 @@ export default {
 </script>
 
 <style scoped>
+.has-error {
+  border: 2px solid #ff585d;
+}
+
 .button {
+  margin: 0 10px;
+  margin-bottom: 10px;
   padding: 0 5px;
   width: 150px;
   height: 2em;
   line-height: 2em;
   font-weight: bold;
   font-size: 1.5em;
-  background-color: #71c5e8;
+  background-color: #c98bdb;
   border-radius: 15px;
   text-align: center;
   cursor: pointer;
+  display: inline-block;
+}
+
+button {
+  color: #2c3e50;
+  border: none;
+}
+.close {
+  background-color: #ff585d;
+}
+
+.add {
+  background-color: #71c5e8;
+}
+
+.float {
+  float: left;
+}
+
+.menu {
+  display: inline-block;
+}
+
+.modal-menu {
+  margin-left: 25%;
 }
 
 .genre-search {
@@ -228,4 +390,67 @@ img.selectedGenre {
   border-color: #002d72;
 }
 
+.flex-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.flex-left {
+  width: 15%;
+  margin-bottom: 5px;
+  margin-left: 25%;
+  font-weight: bold;
+  text-align:left;
+}
+.flex-left-modal {
+  width: 15%;
+  margin-bottom: 5px;
+  margin-left: 15%;
+  font-weight: bold;
+  text-align:left;
+}
+
+.flex-right {
+  width: 48%;
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+.flex-box{
+  width: 100%;
+  align-items:center;
+}
+
+h2 {
+  text-align: center;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+h3 {
+  font-size: 1.5em;
+  text-align: center;
+  font-weight: bold;
+  margin: 20px 0;
+}
+.select-style {
+  width: 356px;
+}
+
+input {
+  height: 34px;
+  width: 350px;
+}
+
+.flex-box button {
+  margin: 10px 0;
+}
+
+.flex-box .button {
+  margin: 10px 0;
+}
+
+.plus {
+}
 </style>

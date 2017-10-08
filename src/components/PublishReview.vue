@@ -7,11 +7,13 @@
     </div>
     <div class="wrapper" v-if="!published">
       <div class="book-description">
-        <h1>Beskrivning</h1>
-        <textarea v-model="review.description"
-          placeholder="Skriv vad boken handlar om här.">
-        </textarea>
-        <vue-record 
+        <div>
+          <h1>Beskrivning</h1>
+          <textarea v-model="review.description"
+            placeholder="Skriv vad boken handlar om här.">
+          </textarea>
+        </div>
+        <vue-record class="audio-recorder"
           :source="'description'"
           @updateBlob="updateAudio"
           :blob="audio.description">
@@ -20,7 +22,7 @@
       <div class="book-review">
         <h1>Recension</h1>
         <textarea v-model="review.review" placeholder="Skriv din bokrecension här."></textarea>
-        <vue-record 
+        <vue-record class="audio-recorder"
           :source="'review'"
           @updateBlob="updateAudio"
           :blob="audio.review">
@@ -45,6 +47,7 @@
 <script>
 /* es-lint disable*/
 import Books from '@/api/services/books';
+import Auth from '@/api/services/auth';
 import Reviews from '@/api/services/reviews';
 import StarRating from 'vue-star-rating';
 import VueRecord from '@/components/VueRecord';
@@ -75,6 +78,7 @@ export default {
   },
   created() {
     this.getData();
+    this.ipAuth();
   },
   computed: {
     reviewFormData() {
@@ -114,11 +118,18 @@ export default {
           this.published = true;
         });
     },
+    ipAuth() {
+      Auth.ipAuth()
+        .then((result) => {
+          console.log(result);
+          console.log(document.cookie);
+        });
+    },
   },
 };
 </script>
 
-<style scoped>
+<style>
 h1 {
   font-size: 2em;
   font-weight: bold;
@@ -137,12 +148,13 @@ textarea {
   height: 2em;
   font-weight: bold;
   font-size: 1.5em;
+  line-height: 2em;
+  margin-top: 10px;
   background-color: #71c5e8;
   border-radius: 15px;
   text-align: center;
-  display: table-cell;
-  vertical-align: middle;
   cursor: pointer;
+  display: inline-block;
 }
 
 .flex-container {
@@ -156,4 +168,16 @@ textarea {
 .flex-box {
   width: 100%;
 }
+
+.wrapper {
+  margin: 0 20px;
+  align-items: center;
+}
+
+.publish {
+  align-items: center;
+  display: inline-block;
+}
+
+
 </style>
