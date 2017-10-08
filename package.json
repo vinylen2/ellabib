@@ -36,6 +36,7 @@
         "vue-select": "github:sagalbot/vue-select",
         "vue-star-rating": "^1.4.0",
         "vuex": "^2.4.1",
+        "vuex-persistedstate": "^2.0.0",
         "wavesurfer.js": "^2.0.0-beta01"
     },
     "devDependencies": {

@@ -7,6 +7,7 @@
       </login>
     </modal>
     <div class="container">
+      <div class="login"><img src="http://37.46.165.87/images/ellabib.png"></div>
       <router-link to="/">Hem</router-link>
       <router-link to="/books">Böcker</router-link>
       <router-link to ="/scanner"
@@ -56,6 +57,7 @@ export default {
     },
     logout() {
       this.$store.commit('changeAdminState');
+      this.$router.push({ name: '/' });
     },
   },
 };

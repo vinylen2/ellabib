@@ -14,17 +14,16 @@ if (window.location.protocol === 'file:' || window.location.port === '3000') {
   cordovaScript.setAttribute('type', 'text/javascript');
   cordovaScript.setAttribute('src', 'cordova.js');
   document.body.appendChild(cordovaScript);
-  this.$store.cordova.isApp = true;
+  store.state.cordova.isApp = true;
 }
 
 function onDeviceReady() {
-  this.$store.cordova.isActive = true;
+  store.state.cordova.isActive = true;
 }
 
 function onLoad() {
   document.addEventListener('deviceready', onDeviceReady, false);
 }
-
 
 /* eslint-disable no-new */
 new Vue({
@@ -37,3 +36,4 @@ new Vue({
     onLoad();
   },
 });
+
