@@ -2,8 +2,8 @@
   <div class="container">
     <div class="wrapper">
       <div class="description flex-container">
-
-        <div class="image">
+        <div class="image"
+          @click="changeDescription">
           <img class="front-img"
             v-if="currentBook.localImage"
             :src="`${imagesUrl}${currentBook.imageUrl}`" />
@@ -15,12 +15,18 @@
           <header class="book-header">
             <h1>{{ currentBook.title }}</h1>
             <!-- To-do: link to page with books from author -->
-             <p>av: {{ author.name }} </p> 
+             <p class="author">av: {{ author.name }} </p> 
           </header>
           <div class="description-body">
-            <p>{{ randomDescription.description }}</p>
+            <p class="no-review" 
+              v-if="reviews.length == 0 && $store.getters.isAllowedToPublish">Bli den första att recensera boken genom att trycka på stjärnan!</p>
+            <p class="no-review" 
+              v-if="reviews.length == 0 && !$store.getters.isAllowedToPublish">Det finns ingen recension för boken.</p>
+            <p v-if="reviews.length > 0"
+              >{{ randomDescription.description }}</p>
             <div class="buttons flex-container">
               <audio-player class="audio-player" 
+                v-if="randomDescription.descriptionAudioUrl"
                 :sources="formattedAudioUrl(randomDescription.descriptionAudioUrl)">
               </audio-player>
               <router-link :to="{ name: 'books', params: { genre: genre }}">
@@ -28,7 +34,8 @@
                   :src="`${imagesUrl}${genre.slug}.png`">
               </router-link>
               <router-link class="review-a"
-               :to="{ name: 'publish-review', params: { book: currentBook }}">
+                v-if="$store.getters.isAllowedToPublish"
+                :to="{ name: 'publish-review', params: { book: currentBook }}">
                 <div class="button review-button">&#9733;</div>
               </router-link> 
             </div>
@@ -49,19 +56,19 @@
                      v-model="currentBook.rating">
                   </star-rating>
                 </div>
-              </dl>
             </div>
           </div>
         </div>
       </div>
-      <div class="reviews">
+      <div class="reviews"
+        v-if="reviews.length > 0">
         <h2>Recensioner</h2>
         <div v-for="review in reviews" class="review">
           <header class="review-header flex-container">
             <!-- To-do: link to page for reviewer -->
             <div class="review-text">
               <span>
-                Av: recencent den {{ formattedDate(review.createdAt) }} &nbsp;
+                Publicerad den {{ formattedDate(review.createdAt) }} &nbsp;
               </span>
             </div>
             <star-rating class="review-rating" :read-only="true"
@@ -75,13 +82,12 @@
           <div class="review-body">
             <p>{{ review.review }}</p>
             <audio-player class="review-audio player" 
+              v-if="review.reviewAudioUrl"
               :sources="formattedAudioUrl(review.reviewAudioUrl)">
             </audio-player>
           </div>
-
         <hr>
         </div>
-
       </div>
     </div>
   </div>
@@ -134,10 +140,13 @@ export default {
     randomizeNumber(max) {
       return Math.floor(Math.random() * (max + 1));
     },
+    changeDescription() {
+      const randomInt = this.randomizeNumber(this.reviews.length - 1);
+      this.randomDescription = this.reviews[randomInt];
+    },
     getBookFromSlug() {
       Books.getFromSlug(this.$route.params.slug)
         .then((result) => {
-          console.log(result);
           if (result.data.reviews.length > 0) {
             const reviews = result.data.reviews;
             const randomInt = this.randomizeNumber(reviews.length - 1);
@@ -160,18 +169,44 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 
 hr {
   margin-top: 25px;
 }
+
+.center {
+  justify-content:center;
+}
+
+.button-2  {
+  margin-right:5px;
+  font-weight: bold;
+  font-size: 3em;
+  width: 70px;
+  height: 70px;
+  line-height: 70px;
+  border-radius: 100%;
+  background-color: #9ddad8;
+  text-align: center;
+  cursor: pointer;
+}
+
+.no-review {
+  font-weight: bold;
+  color: #ff585d;
+}
+
+.author {
+  margin-bottom:10px;
+}
 .flex-container {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .review-header {
-  height: 20px;
   line-height: 20px;
   margin-bottom: 10px;
 }
@@ -230,14 +265,6 @@ hr {
   margin: 10px 0 10px 0;
 }
 
-@media (min-width: 700px) {
-    .image {
-        flex: 0 0 27.0%;
-    }
-    .text {
-        flex: 0 0 63.0%;
-    }
-}
 
 h1 {
   font-size: 2em;
@@ -286,4 +313,27 @@ dt {
   width: 200px;
 }
 
+@media (min-width: 640px) {
+    .flex-container {
+      justify-content: left;
+    }
+    .image {
+        flex: 0 0 10.0%;
+    }
+    .text {
+        flex: 0 0 60.0%;
+    }
+}
+
+@media (min-width: 900px) {
+    .flex-container {
+      justify-content: left;
+    }
+    .image {
+        flex: 0 0 10.0%;
+    }
+    .text {
+        flex: 0 0 70.0%;
+    }
+}
 </style>

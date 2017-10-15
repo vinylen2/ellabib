@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <modal name="edit-review-audio-modal"
-      :height="1000"
+      :height="700"
       @before-open="loadDataAudioModal">
         <edit-review-audio
           @close="closeAudioModal"
@@ -24,7 +24,7 @@
             <div class="review-header flex-container">
               <!-- To-do: link to page for reviewer -->
               <div class="review-title">
-                <span>Av: recencent den {{ formattedDate(review.createdAt) }} &nbsp;</span>
+                <span>Publicerad den {{ formattedDate(review.createdAt) }} &nbsp;</span>
               </div>
               <star-rating class="review-rating"
                 v-bind:read-only="true"
@@ -74,8 +74,25 @@
       </div>
       <hr>
     </div>
-    <div class="publish-button"
-      @click="activateReviews">Spara ({{selectedForActivation.length}})
+    <div class="buttons"
+      v-if="reviews.length > 0">
+      <a class="addAll-button"
+        v-if="!selectedForActivation.length == reviews.length"
+        @click="addAllReviewsForActivation">Markera alla ({{reviews.length}})
+      </a>
+      <a class="addAll-button"
+        v-if="selectedForActivation.length == reviews.length"
+        @click="removeAllReviewsForActivation">Avmarkera alla ({{reviews.length}})
+      </a>
+      <a class="publish-button"
+        @click="activateReviews">Spara ({{selectedForActivation.length}})
+      </a>
+    </div>
+    <div class="no-reviews"
+      v-if="reviews.length == 0">
+      <h1>
+        Inga recensioner väntar på att bli aktiverade
+      </h1>    
     </div>
   </div>
 </template>
@@ -122,6 +139,18 @@ export default {
     });
   },
   methods: {
+    removeAllReviewsForActivation() {
+      this.selectedForActivation = [];
+      this.reviews.forEach((review) => {
+        review.active = false;
+      });
+    },
+    addAllReviewsForActivation() {
+      this.selectedForActivation = this.reviews;
+      this.reviews.forEach((review) => {
+        review.active = true;
+      });
+    },
     closeAudioModal() {
       this.popReview(1);
       this.$modal.hide('edit-review-audio-modal');
@@ -239,6 +268,19 @@ hr {
   cursor: pointer;
 }
 
+.addAll-button {
+  display: inline-block;
+  width: 220px;
+  height: 2em;
+  line-height: 2em;
+  font-weight: bold;
+  font-size: 1.5em;
+  background-color: #c98bdb;
+  border-radius: 15px;
+  text-align: center;
+  cursor: pointer;
+}
+
 .removeAccept {
   background-color: #addb91;
 }
@@ -287,18 +329,18 @@ h2 {
 
 .disabled-textarea {
   width: 500px;
-  height: 100px;
+  height: 150px;
   resize: none;
+  outline: none;
+  font-size: 1em;
+  border-color: #c2c7c9;
 }
 
-.disabled-textarea:hover {
-  border-color: black;
+@media (max-width: 864px) {
+  .flex-container {
+    justify-content:center;
+  }
 }
 
-.modal-textarea {
-  width: 500px;
-  height: 100px;
-  resize: none;
-}
 
 </style>

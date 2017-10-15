@@ -1,19 +1,19 @@
 <template>
   <div>
-    <div class="button stop"
+    <button class="button stop"
       v-show="isRecording"
       @click="stopRecording"
       v-html="unicodeIcons.stop">
-    </div>
-    <div class="button record"
+    </button>
+    <button class="button record"
       v-show="!isRecording"
       @click="startRecording"
       v-html="unicodeIcons.record">
-    </div>
-    <div class="button counter"
+    </button>
+    <button class="button counter"
       v-show="isRecording">
       {{recordingLength}}
-    </div>
+    </button>
     <!-- <div class="button play"
       v-if="dataUrl().length > 0"
       @click="playbackAudio"
@@ -95,7 +95,7 @@ export default {
     },
     captureUserMedia(mediaConstraints, successCallback, errorCallback) {
       var isBlackBerry = !!(/BB10|BlackBerry/i.test(navigator.userAgent || ''));
-      if(isBlackBerry && !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia)) {
+      if(isBlackBerry && !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mediaDevices.getUserMedia || navigator.mozGetUserMedia)) {
           navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
           navigator.getUserMedia(mediaConstraints, successCallback, errorCallback);
           return
@@ -183,10 +183,10 @@ export default {
 
 <style>
 .button {
+  border: none;
   margin: 10px;
   font-weight: bold;
-  font-size: 3em;
-  line-height: 70px;
+  font-size: 2em;
   width: 70px;
   height: 70px;
   border-radius: 100%;
@@ -198,7 +198,7 @@ export default {
   font-size: 2em;
 }
 .record {
-  font-size: 4em;
+  font-size: 2em;
   color: #ff585d;
 }
 </style>

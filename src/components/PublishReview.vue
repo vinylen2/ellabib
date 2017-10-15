@@ -9,7 +9,8 @@
       <div class="book-description">
         <div>
           <h1>Beskrivning</h1>
-          <textarea v-model="review.description"
+          <textarea class="publish-textarea"
+            v-model="review.description"
             placeholder="Skriv vad boken handlar om här.">
           </textarea>
         </div>
@@ -21,7 +22,10 @@
       </div>
       <div class="book-review">
         <h1>Recension</h1>
-        <textarea v-model="review.review" placeholder="Skriv din bokrecension här."></textarea>
+        <textarea class="publish-textarea"
+          v-model="review.review" 
+          placeholder="Skriv din bokrecension här.">
+        </textarea>
         <vue-record class="audio-recorder"
           :source="'review'"
           @updateBlob="updateAudio"
@@ -137,10 +141,12 @@ h1 {
 }
 
 textarea {
-  width: 500px;
+  width: 80%;
   height: 200px;
+  resize: none;
   outline: none;
   font-size: 1em;
+  border-color: #c2c7c9;
 }
 
 .publish-button {
@@ -174,7 +180,7 @@ textarea {
   align-items: center;
 }
 
-.publish {
+.publish-textarea {
   align-items: center;
   display: inline-block;
 }

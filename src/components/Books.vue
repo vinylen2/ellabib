@@ -1,26 +1,28 @@
 <template>
   <div class="container">
     <div class="genre-search">
-      <div v-for="genre in genres" class="genre">
+      <a v-for="genre in genres" class="genre">
         <img class="genre-icon" 
           v-on:click="toggleSelected(genre)"
           v-bind:class="{ selected: selected == genre }"
           :src="`${imagesUrl}${genre.slug}.png`"/>
-        <!-- <img class="genre-icon selected"
-          v-show="genre.selected"
-          v-on:click="addGenreToQuery(genre), toggleSelectedProperty(genre)"
-          :src="`${imagesUrl}${genre.slug}.png`"/>
-        <img class="genre-icon"
-          v-show="!genre.selected"
-          v-on:click="addGenreToQuery(genre), toggleSelectedProperty(genre)"
-          :src="`${imagesUrl}${genre.slug}.png`"/> -->
-      </div>
+      </a>
+      <a class="genre button"
+        @click="toggleSearch">
+      </a>
+    </div>
+    <div class="searchbar"
+      v-if="displaySearch">
+      <input type="text" 
+        class="searchform"
+        v-model="searchTerm">
     </div>
     <div class="wrapper flex-container">
-      <div v-for="book in books" 
+      <div v-for="book in paginatedBooks" 
         class="book">
         <router-link class ="link" :to="{ name: 'bok', params: { slug: book.slug }}">
-          <img v-if="book.localImage"
+          <img class="front-img"
+            v-if="book.localImage"
             :src="`${imagesUrl}${book.imageUrl}`">
           <img class="front-img"
             v-if="!book.localImage"
@@ -38,20 +40,32 @@ import Books from '@/api/services/books';
 import Genres from '@/api/services/genres';
 import Urls from '@/assets/urls';
 
-
 export default {
   name: 'books',
   props: ['genre'],
   data() {
     return {
+      displaySearch: false,
       selected: '',
       imagesUrl: Urls.images,
       busy: false,
-      books: [],
       image: '',
       genres: [],
       queryParams: { genre: [] },
+      page: 1,
+      booksToDisplay: 10,
+      searchTerm: '',
     };
+  },
+  computed: {
+    paginatedBooks() {
+      return this.$store.state.books.slice(0, this.page * this.booksToDisplay);
+    },
+  },
+  watch: {
+    searchTerm() {
+      this.searchBooks();
+    },
   },
   created() {
     this.getGenres();
@@ -62,24 +76,15 @@ export default {
     }
   },
   methods: {
-    loadMore() {
-      setTimeout(() => {
-        console.log('fetching');
-        this.busy = true;
-        this.getNewBooks()
-          .then((result) => {
-            const newArray = this.books.concat(result);
-            this.books = newArray;
-            this.busy = false;
-          });
-      }, 1000);
+    toggleSearch() {
+      this.displaySearch = !this.displaySearch;
     },
     addGenreToQuery(genre) {
-      if (this.queryParams.genre[0] === genre.id) {
+      if (this.queryParams.genre[0] === genre.slug) {
         this.getBooks();
         this.queryParams.genre.pop();
       } else {
-        this.queryParams.genre[0] = genre.id;
+        this.queryParams.genre[0] = genre.slug;
         this.getBooksFromGenres();
       }
     },
@@ -92,24 +97,30 @@ export default {
       this.addGenreToQuery(genre);
     },
     getBooksFromGenres() {
-      Books.getAllFromGenres(this.$data.queryParams.genre.join(','))
+      Books.search(this.$data.queryParams.genre.join(' '))
         .then((result) => {
-          this.books = result.data;
+          this.$store.commit('books', result.data);
         });
+    },
+    searchBooks() {
+      if (this.queryParams.genre.length > 0) {
+        console.log(this.queryParams.genre);
+        Books.searchFromGenre(this.queryParams.genre, this.searchTerm)
+          .then((result) => {
+            this.$store.commit('books', result.data);
+          });
+      } else {
+        Books.search(this.searchTerm)
+          .then((result) => {
+            this.$store.commit('books', result.data);
+          });
+      }
     },
     getBooks() {
       Books.getAll()
         .then((result) => {
-          this.books = result.data;
+          this.$store.commit('books', result.data);
         });
-    },
-    getNewBooks() {
-      return new Promise((res) => {
-        Books.getAll()
-          .then((result) => {
-            res(result.data);
-          });
-      });
     },
     getGenres() {
       Genres.getAll()
@@ -129,40 +140,20 @@ export default {
 </script>
 
 <style scoped>
-
 .flex-container {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .book {
     padding: 10px;
     box-sizing: border-box;
-    flex: 0 0 98%;
+    flex: 0 0 48%;
     margin: 0 1% 10px;
 }
-@media (min-width: 500px) {
-    .book {
-      flex: 0 0 48.0%;
-    }
-}
-@media (min-width: 700px) {
-    .book {
-      flex: 0 0 31.3333333333333%;
-    }
-}
-@media (min-width: 980px) {
-    .book {
-      flex: 0 0 23.0%;
-    }
-}
 
-@media (min-width: 1400px) {
-    .book {
-      flex: 0 0 18.0%;
-    }
-}
 
 .genre-search {
   display: inline-block;
@@ -170,9 +161,21 @@ export default {
   margin: 20px 0 20px 0;
 }
 
+.button  {
+  margin-right:5px;
+  font-weight: bold;
+  font-size: 1.5em;
+  width: 60px;
+  height: 60px;
+  line-height: 60px;
+  border-radius: 100%;
+  background-color: #9ddad8;
+  text-align: center;
+  cursor: pointer;
+}
 
 .genre {
-  float: left;
+  display: inline-block;
 }
 
 h3 {
@@ -202,12 +205,36 @@ h3 {
 }
 
 .front-img {
-  width: 200px;
-
+  width: 250px;
 }
 
 img.selected {
   border-color: #002d72;
 }
 
+@media (min-width: 700px) {
+    .book {
+      flex: 0 0 20%;
+    }
+    .front-img {
+      width: 200px;
+    }
+}
+@media (min-width: 980px) {
+    .book {
+      flex: 0 0 23.0%;
+    }
+    .front-img {
+      width: 200px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .book {
+      flex: 0 0 18.0%;
+    }
+    .front-img {
+      width: 200px;
+    }
+}
 </style>

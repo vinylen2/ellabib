@@ -10,13 +10,8 @@ export default {
   getFromSlug(slug) {
     return api.get(`books/slug/${slug}`).then(response => response.data);
   },
-  getAllFromGenres(genreIds) {
-    return api.get('books', {
-      params: {
-        genre: genreIds,
-      },
-    })
-    .then(response => response.data);
+  getFromIsbn(isbn) {
+    return api.get(`books/isbn/${isbn}`).then(response => response.data);
   },
   publishBookFromIsbn(isbn, genreId) {
     return api.post('books/publish/isbn', { isbn, genreId }).then(response => response.data);
@@ -25,6 +20,9 @@ export default {
     return api.post('books/publish/manual', { isbn, genreId, title, pages, authorId, imageUrl }).then(response => response.data);
   },
   search(queries) {
-    return api.get('books/search', { params: queries }).then(response => response.data);
+    return api.get(`books/search?query=${queries}`).then(response => response.data);
+  },
+  searchFromGenre(genre, queries) {
+    return api.get(`books/genre/${genre}/search?query=${queries}`).then(response => response.data);
   },
 };

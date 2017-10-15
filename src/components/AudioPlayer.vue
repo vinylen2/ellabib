@@ -23,20 +23,20 @@
 
 <template>
   <div>
-    <div class="button-2 pause"
+    <a class="button-2 pause"
       v-if="playing"
       @click="togglePlayback"
       v-html="unicodeIcons.pause">
-    </div>
-    <div class="button-2 "
+    </a>
+    <a class="button-2 "
       v-else
       @click="togglePlayback"
       v-html="unicodeIcons.play">
-    </div>
-    <div class="button-2 "
+    </a>
+    <a class="button-2 "
       @click="reset"
       v-html="unicodeIcons.reset">
-    </div>
+    </a>
   </div>
 </template>
 
@@ -56,10 +56,10 @@
   cursor: pointer;
 }
 
-.small div {
+.small a {
   width: 40px;
   height: 40px;
-  font-size: 2em;
+  font-size: 1em;
 }
 
 .button-2:hover {

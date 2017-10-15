@@ -7,7 +7,9 @@ import PublishReview from '@/components/PublishReview';
 import Scanner from '@/components/Scanner';
 import ActivateReviews from '@/components/ActivateReviews';
 import PostBook from '@/components/PostBook';
-// import Store from '@/stores/store';
+import About from '@/components/About';
+import Login from '@/components/Login';
+
 
 Vue.use(Router);
 
@@ -39,6 +41,16 @@ export default new Router({
       path: '/scanner',
       name: 'scanner',
       component: Scanner,
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: About,
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login,
     },
     {
       path: '/activate-reviews',

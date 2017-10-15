@@ -72,6 +72,7 @@ export default {
     },
     changeAdminState() {
       this.$store.commit('changeAdminState');
+      this.$router.push({ name: 'activate-reviews' });
     },
   },
 };
@@ -114,7 +115,7 @@ export default {
 
 .modal-menu {
   margin-top: 20px;
-  margin-left: 20%;
+  margin-left: 28%;
 }
 .flex-container {
   display: flex;

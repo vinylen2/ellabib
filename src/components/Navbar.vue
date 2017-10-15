@@ -1,63 +1,60 @@
 <template>
   <header class="header">
-    <modal name="login-modal"
-      :height="250">
-      <login
-        @close="closeModal">
-      </login>
-    </modal>
     <div class="container">
-      <div class="login"><img src="http://37.46.165.87/images/ellabib.png"></div>
-      <router-link to="/">Hem</router-link>
+      <router-link to="/books">
+        <img src="https://ellabib.se/images/ellabib.png">
+      </router-link>
+      <!-- <router-link to="/">Hem</router-link> -->
       <router-link to="/books">Böcker</router-link>
       <router-link to ="/scanner"
-        v-show="isCordovaApp">Scanner</router-link>
-      <router-link to ="/post-book"
-        v-show="isAdmin">Lägg till bok</router-link>
-      <router-link to ="/activate-reviews"
-        v-show="isAdmin">Aktivera</router-link>
-      <div class="login"
-        v-show="!isAdmin"
-        @click="showLoginModal">Logga in
-      </div>
-      <div class="login"
-        v-show="isAdmin"
-        @click="logout">Logga ut
+        v-show="isDeviceWithWebRTC">Scanner</router-link>
+      <router-link to="/about">Om</router-link>
+      <div class="admin">
+        <router-link to ="/post-book"
+          v-show="isAdmin">Lägg till bok</router-link>
+        <router-link to ="/activate-reviews"
+          v-show="isAdmin">Aktivera</router-link>
+        <div class="login"
+          v-show="isAdmin"
+          @click="logout">Logga ut
+        </div>
       </div>
     </div>
   </header>
 </template>
 
 <script>
-import Vue from 'vue';
-import Login from '@/components/Login';
-import VModal from 'vue-js-modal';
-
-Vue.use(VModal);
+import Auth from '@/api/services/auth';
 
 export default {
   name: 'navbar',
-  components: {
-    Login,
+  created() {
+    this.ipAuth();
+    this.$store.commit('isAndroid');
+    navigator.getUserMedia = navigator.getUserMedia ||
+      navigator.webkitGetUserMedia ||
+      navigator.mozGetUserMedia;
   },
   computed: {
-    isCordovaApp() {
-      return this.$store.state.cordova.isApp;
-    },
     isAdmin() {
       return this.$store.state.isAdmin;
     },
+    isDeviceWithWebRTC() {
+      return this.$store.getters.isDeviceWithWebRTC;
+    },
   },
   methods: {
-    showLoginModal() {
-      this.$modal.show('login-modal');
-    },
-    closeModal() {
-      this.$modal.hide('login-modal');
-    },
     logout() {
       this.$store.commit('changeAdminState');
       this.$router.push({ name: '/' });
+    },
+    ipAuth() {
+      Auth.ip()
+        .then((result) => {
+          if (result.ipAuth) {
+            this.$store.commit('isAllowedIp');
+          }
+        });
     },
   },
 };
@@ -69,8 +66,13 @@ export default {
   width: 100%;
   background-color: #addb91;
   display: block;
-  height: 70px;
+  height: 80px;
   margin-bottom: 20px;
+}
+
+img {
+  height: 50px;
+  vertical-align: middle;
 }
 
 a {
@@ -78,10 +80,10 @@ a {
   display: block;
   color: black;
   text-align: center;
-  padding-left: 50px;
+  padding-left: 20px;
   font-size: 1.5em;
   text-decoration: none;
-  line-height:70px;
+  line-height:80px;
 }
 
 .login {
@@ -90,10 +92,10 @@ a {
   display: block;
   color: black;
   text-align: center;
-  padding-left: 50px;
+  padding-left: 20px;
   font-size: 1.5em;
   text-decoration: none;
-  line-height:70px;
+  line-height:80px;
 }
 
 .login:hover {
@@ -104,6 +106,16 @@ a {
 a:hover {
   color: black;
   font-weight: bold;
+}
+
+@media screen and (max-width: 700px) {
+  .admin {
+    display: none;
+    font-size: 25px;
+  }
+  .navbar {
+    font-size: 25px;
+  }
 }
 
 

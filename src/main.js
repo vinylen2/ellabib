@@ -18,6 +18,14 @@ if (window.location.protocol === 'file:' || window.location.port === '3000') {
 }
 
 function onDeviceReady() {
+// if (window.device.platform === 'iOS') {
+  // cordova.plugins.iosrtc.registerGlobals();
+  // // load adapter.js
+  // var script = document.createElement("script");
+  // script.type = "text/javascript";
+  // script.src = "js/adapter-latest.js";
+  // script.async = false;
+  // document.getElementsByTagName("head")[0].appendChild(script);
   store.state.cordova.isActive = true;
 }
 
@@ -36,4 +44,3 @@ new Vue({
     onLoad();
   },
 });
-

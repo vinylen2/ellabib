@@ -217,24 +217,26 @@ export default {
     });
   },
   methods: {
-    validateBeforeSubmitManualIsbn() {
-      this.$validator.validateAll();
-      if (!this.errors.any()) {
-        this.publishBookFromManualInput(
-          this.isbn,
-          this.genreId,
-          this.manualData.title,
-          this.manualData.pages,
-          this.authorId,
-          'nopicture.png',
-        );
-      }
-    },
     validateBeforeSubmitManualBook() {
-      this.$validator.validateAll();
-      if (!this.errors.any()) {
-        this.publishBookFromIsbn(this.isbn, this.genreId);
-      }
+      this.$validator.validateAll().then((result) => {
+        if (result) {
+          this.publishBookFromManualInput(
+            this.isbn,
+            this.genreId,
+            this.manualData.title,
+            this.manualData.pages,
+            this.authorId,
+            'nopicture.png',
+          );
+        }
+      });
+    },
+    validateBeforeSubmitManualIsbn() {
+      this.$validator.validateAll().then((result) => {
+        if (result) {
+          this.publishBookFromIsbn(this.isbn, this.genreId);
+        }
+      });
     },
     saveAuthor() {
       this.postAuthor(this.newAuthor.firstname, this.newAuthor.lastname);
@@ -286,6 +288,7 @@ export default {
     publishBookFromIsbn(isbn, genreId) {
       Books.publishBookFromIsbn(isbn, genreId)
         .then((result) => {
+          console.log(result);
           if (!result.added) {
             console.log(result.message);
           } else {
@@ -294,8 +297,10 @@ export default {
         });
     },
     publishBookFromManualInput(isbn, genreId, title, pages, authorId, imageUrl) {
+      console.log('publishing');
       Books.publishBookFromManualInput(isbn, genreId, title, pages, authorId, imageUrl)
-        .then(() => {
+        .then((result) => {
+          console.log(result);
           this.bookPosted();
         });
     },
