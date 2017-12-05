@@ -9,11 +9,17 @@ import ActivateReviews from '@/components/ActivateReviews';
 import PostBook from '@/components/PostBook';
 import About from '@/components/About';
 import Login from '@/components/Login';
-
+import Admin from '@/components/Admin';
+import QrCodes from '@/components/QrCodes';
+import Store from '@/stores/store';
+import VueAnalytics from 'vue-analytics';
+import Meta from 'vue-meta';
 
 Vue.use(Router);
+Vue.use(Meta);
 
-export default new Router({
+const router = new Router({
+  mode: 'history',
   routes: [
     {
       path: '/',
@@ -53,28 +59,66 @@ export default new Router({
       component: Login,
     },
     {
-      path: '/activate-reviews',
-      name: 'activate-reviews',
-      component: ActivateReviews,
-      // beforeEnter(to, from, next) {
-      //   if (Store.isAdmin) {
-      //     next('/activate-reviews');
-      //   } else {
-      //     next('/');
-      //   }
-      // },
-    },
-    {
-      path: '/post-book',
-      name: 'post-book',
-      component: PostBook,
-      // beforeEnter(to, from, next) {
-      //   if (Store.isAdmin) {
-      //     next('/post-book');
-      //   } else {
-      //     next('/');
-      //   }
-      // },
+      path: '/admin',
+      name: 'admin',
+      component: Admin,
+      meta: {
+        requiresAuth: true,
+      },
+      children: [
+        {
+          path: 'activate-reviews',
+          name: 'activate-reviews',
+          component: ActivateReviews,
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: 'post-book',
+          name: 'post-book',
+          component: PostBook,
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: 'qr-codes',
+          name: 'qr-codes',
+          component: QrCodes,
+          meta: {
+            requiresAuth: true,
+          },
+        },
+      ],
     },
   ],
 });
+
+router.beforeEach((to, from, next) => {
+  if (to.meta.requiresAuth) {
+    if (Store.state.isAdmin) {
+      next();
+    } else {
+      next({ name: 'login' });
+    }
+  }
+  next();
+});
+
+Vue.use(VueAnalytics, {
+  // id: 'UA-110562368-1', // demo
+  id: 'UA-110562368-2', // real
+  router,
+  autoTracking: {
+    pageviewTemplate(route) {
+      return {
+        page: route.path,
+        title: document.title,
+        location: window.location.href,
+      };
+    },
+  },
+});
+
+export default router;

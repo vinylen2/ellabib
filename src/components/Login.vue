@@ -14,20 +14,18 @@
         </div>
         <div class="flex-right">
             <input v-model="password"
-            type="password"
-            placeholder="Lösenord">
+              type="password"
+              @keyup.enter="login"
+              placeholder="Lösenord">
         </div>
         <div class="modal-menu">
           <div class="error"
             v-if="loginFailed">
             Fel användarnamn eller lösenord.
           </div>
-          <div class="button float close"
-            @click="closeLogin">Stäng
-          </div>
-          <div class="button add"
+          <button class="button"
             @click="login">Logga in
-          </div>
+          </button>
         </div>
     </div>
   </div>
@@ -57,18 +55,14 @@ export default {
   },
   methods: {
     login() {
-      Auth.adminLogin({ username: this.username, password: this.password })
+      Auth.login({ username: this.username, password: this.password })
         .then((result) => {
           if (result.auth) {
             this.changeAdminState();
-            this.closeLogin();
           } else {
             this.loginFailed = true;
           }
         });
-    },
-    closeLogin() {
-      this.$emit('close');
     },
     changeAdminState() {
       this.$store.commit('changeAdminState');
@@ -84,6 +78,7 @@ export default {
 }
 
 .button {
+  border: none;
   margin: 10px 10px;
   padding: 0 5px;
   width: 150px;
@@ -91,42 +86,27 @@ export default {
   line-height: 2em;
   font-weight: bold;
   font-size: 1.5em;
-  background-color: #c98bdb;
+  background-color: #71c5e8;
   border-radius: 15px;
   text-align: center;
   cursor: pointer;
   display: inline-block;
 }
-.close {
-  background-color: #ff585d;
-}
-
-.add {
-  background-color: #71c5e8;
-}
-
-.float {
-  float: left;
-}
-
-.menu {
-  display: inline-block;
-}
 
 .modal-menu {
   margin-top: 20px;
-  margin-left: 28%;
+  width: 100%;
 }
 .flex-container {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .flex-left-modal {
-  width: 25%;
+  width: 35%;
   margin-bottom: 5px;
-  margin-left: 22%;
   font-weight: bold;
   text-align:left;
 }
@@ -135,11 +115,6 @@ export default {
   width: 48%;
   margin-bottom: 5px;
   text-align: left;
-}
-
-.flex-box{
-  width: 100%;
-  align-items:center;
 }
 
 .error {
@@ -156,6 +131,24 @@ h3 {
 }
 
 input {
-  width: 200px;
+  width: 80%;
 }
+
+.flex-box {
+  width: 100%;
+}
+
+@media (min-width: 600px) {
+  .flex-box {
+    width: 70%;
+    margin-left: 15%;
+  }
+}
+@media (min-width: 980px) {
+  .flex-box {
+    width: 50%;
+    margin-left: 25%;
+  }
+}
+
 </style>

@@ -1,48 +1,91 @@
-<script>
-  import VueHowler from 'vue-howler';
-
-  export default {
-    mixins: [VueHowler],
-    data() {
-      return {
-        unicodeIcons: {
-          play: '►',
-          pause: '&nbsp;&#9612&#9612',
-          reset: '&#8634;',
-        },
-      };
-    },
-    methods: {
-      reset() {
-        this.setSeek(0);
-        this.play();
-      },
-    },
-  };
-</script>
-
 <template>
   <div>
-    <a class="button-2 pause"
+    <button class="button pause"
       v-if="playing"
-      @click="togglePlayback"
-      v-html="unicodeIcons.pause">
-    </a>
-    <a class="button-2 "
+      @click="togglePlayback"><icon name="pause" scale="2"></icon>
+    </button>
+    <button class="button"
       v-else
-      @click="togglePlayback"
-      v-html="unicodeIcons.play">
-    </a>
-    <a class="button-2 "
-      @click="reset"
-      v-html="unicodeIcons.reset">
-    </a>
+      @click="togglePlayback();"><icon name="play" scale="2"></icon>
+    </button>
+    <button class="button"
+      @click="reset();"><icon name="fast-backward" scale="2"></icon>
+    </button>
   </div>
 </template>
 
+<script>
+import VueHowler from 'vue-howler';
+import Reviews from '@/api/services/reviews';
+import Icon from 'vue-awesome';
+
+export default {
+  mixins: [VueHowler],
+  components: {
+    Icon,
+  },
+  props: ['audioInfo'],
+  data() {
+    return {
+      played: false,
+      book: {
+        title: this.audioInfo.book.title,
+        id: this.audioInfo.book.id,
+      },
+      type: this.audioInfo.type,
+      audioId: this.audioInfo.id,
+    };
+  },
+  computed: {
+    something() {
+      return this.seek / this.duration;
+    },
+    gaCategory() {
+      if (this.type === 'review') {
+        return 'Recension';
+      }
+      return 'Beskrivning';
+    },
+  },
+  watch: {
+    something() {
+      if (this.something > 0.3 && !this.played) {
+        this.gaPlay();
+        this.played = true;
+      }
+    },
+  },
+  methods: {
+    gaPlay() {
+      this.$ga.event({
+        eventCategory: 'Ljud',
+        eventAction: this.book.title,
+        eventLabel: this.gaCategory,
+      });
+    },
+    incrementCounter() {
+      Reviews.incrementPlay({
+        reviewId: this.audioId,
+        type: this.type,
+      });
+    },
+    reset() {
+      this.setSeek(0);
+      this.played = false;
+      this.play();
+    },
+  },
+};
+</script>
+
 <style scoped>
 
-.button-2  {
+.button:hover {
+  background-color: #71c5e8;
+}
+
+.button {
+  border: none;
   margin-right:5px;
   font-weight: bold;
   font-size: 3em;

@@ -1,24 +1,32 @@
 <template>
   <div class="container">
-    <div class="genre-search">
-      <a v-for="genre in genres" class="genre">
-        <img class="genre-icon" 
-          v-on:click="toggleSelected(genre)"
+    <div class="loading"
+      v-if="$store.state.genres.length == 0">
+      <sync-loader :color="'#71c5e8'"></sync-loader>
+    </div>
+    <div class="genre-search" v-else>
+      <a v-for="genre in $store.state.genres" class="genre tooltip"
+        v-tooltip.bottom="genre.name">
+        <img class="genre-icon"
+          @click="toggleSelected(genre); gaGenre(genre);"
           v-bind:class="{ selected: selected == genre }"
           :src="`${imagesUrl}${genre.slug}.png`"/>
       </a>
       <a class="genre button"
-        @click="toggleSearch">
+        @click="toggleSearch"><icon name="search" scale="2"></icon>
       </a>
     </div>
-    <div class="searchbar"
-      v-if="displaySearch">
-      <input type="text" 
-        class="searchform"
-        v-model="searchTerm">
-    </div>
+    <transition name="fadeLeft">
+      <div class="searchbar"
+        v-if="displaySearch">
+        <input class="searchform"
+          type="text"
+          placeholder="Sök efter titel/författare..."
+          v-model="searchTerm">
+      </div>
+    </transition>
     <div class="wrapper flex-container">
-      <div v-for="book in paginatedBooks" 
+      <div v-for="book in paginatedBooks"
         class="book">
         <router-link class ="link" :to="{ name: 'bok', params: { slug: book.slug }}">
           <img class="front-img"
@@ -31,20 +39,47 @@
         </router-link>
       </div>
     </div>
+    <mugen-scroll :handler="incrementPage"
+      v-if="!allBooksFetched"
+      :should-handle="!loading">
+      <sync-loader :color="'#71c5e8'"></sync-loader>
+    </mugen-scroll>
   </div>
 </template>
 
 <script>
 /* eslint no-param-reassign: ["error", { "props": false }]*/
+import Vue from 'vue';
+import { VTooltip } from 'v-tooltip';
+import MugenScroll from 'vue-mugen-scroll';
 import Books from '@/api/services/books';
 import Genres from '@/api/services/genres';
+import Icon from 'vue-awesome';
+import SyncLoader from 'vue-spinner/src/SyncLoader';
+import _ from 'lodash';
 import Urls from '@/assets/urls';
+
+Vue.directive('tooltip', VTooltip);
+
+require('vue2-animate/dist/vue2-animate.min.css');
 
 export default {
   name: 'books',
-  props: ['genre'],
+  metaInfo: {
+    title: 'Alla böcker',
+  },
+  components: {
+    MugenScroll,
+    Icon,
+    SyncLoader,
+  },
+  props: [
+    'genre',
+    'forceSearch',
+  ],
   data() {
     return {
+      searchTerm: '',
       displaySearch: false,
       selected: '',
       imagesUrl: Urls.images,
@@ -54,30 +89,60 @@ export default {
       queryParams: { genre: [] },
       page: 1,
       booksToDisplay: 10,
-      searchTerm: '',
+      loading: false,
     };
   },
   computed: {
     paginatedBooks() {
       return this.$store.state.books.slice(0, this.page * this.booksToDisplay);
     },
+    allBooksFetched() {
+      if (this.$store.state.books.length === this.paginatedBooks.length) {
+        return true;
+      }
+      return false;
+    },
   },
   watch: {
-    searchTerm() {
+    searchTerm: _.debounce(function () {
       this.searchBooks();
-    },
+    }, 500),
   },
   created() {
     this.getGenres();
     if (this.$route.params.genre) {
       this.addGenreToQuery(this.$route.params.genre);
+    } else if (this.$route.params.forceSearch) {
+      this.displaySearch = true;
+      this.searchTerm = this.$route.params.forceSearch;
+      this.searchBooks();
     } else {
       this.getBooks();
     }
   },
   methods: {
+    gaGenre(genre) {
+      this.$ga.event({
+        eventCategory: 'Leta böcker',
+        eventAction: 'Genre',
+        eventLabel: genre.name,
+      });
+    },
+    gaSearch(term) {
+      this.$ga.event({
+        eventCategory: 'Leta böcker',
+        eventAction: 'Sökning',
+        eventLabel: term,
+      });
+    },
+    incrementPage() {
+      this.loading = true;
+      this.page += 1;
+      this.loading = false;
+    },
     toggleSearch() {
       this.displaySearch = !this.displaySearch;
+      this.searchTerm = '';
     },
     addGenreToQuery(genre) {
       if (this.queryParams.genre[0] === genre.slug) {
@@ -85,7 +150,7 @@ export default {
         this.queryParams.genre.pop();
       } else {
         this.queryParams.genre[0] = genre.slug;
-        this.getBooksFromGenres();
+        this.searchBooks();
       }
     },
     toggleSelected(genre) {
@@ -96,20 +161,14 @@ export default {
       }
       this.addGenreToQuery(genre);
     },
-    getBooksFromGenres() {
-      Books.search(this.$data.queryParams.genre.join(' '))
-        .then((result) => {
-          this.$store.commit('books', result.data);
-        });
-    },
     searchBooks() {
       if (this.queryParams.genre.length > 0) {
-        console.log(this.queryParams.genre);
         Books.searchFromGenre(this.queryParams.genre, this.searchTerm)
           .then((result) => {
             this.$store.commit('books', result.data);
           });
       } else {
+        this.gaSearch(this.searchTerm);
         Books.search(this.searchTerm)
           .then((result) => {
             this.$store.commit('books', result.data);
@@ -125,9 +184,9 @@ export default {
     getGenres() {
       Genres.getAll()
         .then((result) => {
-          this.genres = result.data;
+          this.$store.commit('genres', result.data);
           if (this.$route.params.genre) {
-            this.genres.forEach((genre) => {
+            this.$store.state.genres.forEach((genre) => {
               if (genre.id === this.$route.params.genre.id) {
                 this.selected = genre;
               }
@@ -139,12 +198,58 @@ export default {
 };
 </script>
 
+<style>
+.loading {
+  margin: 50px;
+}
+.tooltip .tooltip-inner {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  background-color: #71c5e8;
+  padding: 5px 10px;
+  border-radius: 20px;
+}
+
+</style>
+
 <style scoped>
+.wrapper {
+  transition: all 0.5s ease-in-out;
+}
+
+::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+  color: #2c3e50;
+}
+::-moz-placeholder { /* Firefox 19+ */
+  color: #2c3e50;
+}
+:-ms-input-placeholder { /* IE 10+ */
+  color: #2c3e50;
+}
+:-moz-placeholder { /* Firefox 18- */
+  color: #2c3e50;
+}
+
 .flex-container {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.searchform {
+  border-radius: 10px;
+  width: 80%;
+  height: 30px;
+  background-color: #71c5e8;
+  color: #2c3e50;
+  border:none;
+  font-size: 1.5em;
+  padding: 15px;
+}
+
+.searchbar {
+  margin-top: 10px;
+  margin-bottom: 20px;
 }
 
 .book {
@@ -158,16 +263,18 @@ export default {
 .genre-search {
   display: inline-block;
   text-align: center;
-  margin: 20px 0 20px 0;
+  margin: 20px 0;
 }
 
 .button  {
+  vertical-align: top;
+  margin-top: 3px;
   margin-right:5px;
   font-weight: bold;
-  font-size: 1.5em;
-  width: 60px;
-  height: 60px;
-  line-height: 60px;
+  font-size: 3em;
+  width: 63px;
+  height: 63px;
+  line-height: 63px;
   border-radius: 100%;
   background-color: #9ddad8;
   text-align: center;
@@ -218,6 +325,9 @@ img.selected {
     }
     .front-img {
       width: 200px;
+    }
+    .searchform {
+      width: 40%;
     }
 }
 @media (min-width: 980px) {

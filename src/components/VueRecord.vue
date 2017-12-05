@@ -1,28 +1,24 @@
 <template>
   <div>
-    <button class="button stop"
-      v-show="isRecording"
-      @click="stopRecording"
-      v-html="unicodeIcons.stop">
-    </button>
-    <button class="button record"
-      v-show="!isRecording"
-      @click="startRecording"
-      v-html="unicodeIcons.record">
-    </button>
-    <button class="button counter"
-      v-show="isRecording">
-      {{recordingLength}}
-    </button>
-    <!-- <div class="button play"
-      v-if="dataUrl().length > 0"
-      @click="playbackAudio"
-      v-html="unicodeIcons.play">
-    </div> -->
+    <div v-show="!isEditing">
+      <button class="button stop"
+        v-show="isRecording"
+        @click="stopRecording"><icon name="stop" scale="2"></icon>
+      </button>
+      <button class="button record"
+        v-show="!isRecording"
+        @click="startRecording"><icon name="microphone" scale="2"></icon>
+      </button>
+      <div class="counter"
+        v-show="isRecording">
+        {{recordingLength}}
+      </div>
+    </div>
     <audio-editor class="editor"
       ref="editor"
       v-if="dataUrl.length > 0"
       @cut="updateData"
+      @trashRecording="trashRecording"
       :dataUrl="dataUrl"
       :source="source"
       :isEditing="isEditing">
@@ -36,10 +32,12 @@ import RecordRTC from 'recordrtc';
 import Store from '@/stores/store';
 import timer from 'minimal-timer';
 import AudioEditor from '@/components/AudioEditor';
+import Icon from 'vue-awesome';
 
 export default {
   components: {
     'audio-editor': AudioEditor,
+    Icon,
   },
   props: {
     blob: '',
@@ -61,20 +59,27 @@ export default {
     return {
       localBlob: this.blob,
       dataUrl: '',
+      maxLength: 30,
       Timer: timer(),
       recordingLength: '',
       isRecording: false,
       isEditing: false,
-      newRecording: 0,
-      unicodeIcons: {
-        play: '&#9658;',
-        record: '&#9679;',
-        stop: '&#9632;',
-        edit: '&#x2702;',
-      }
+      newRecording: 0
     }
   },
+  watch: {
+    recordingLength() {
+      if (this.recordingLength > this.maxLength) {
+        this.stopRecording();
+      };
+    },
+  },
   methods: {
+    trashRecording() {
+      this.isEditing = false;
+      this.dataUrl = '';
+      this.$emit('updateBlob', null, this.source);
+    },
     updateData(blob) {
       this.dataUrl = URL.createObjectURL(blob);
       this.localBlob = blob;
@@ -181,9 +186,10 @@ export default {
 
 </script>
 
-<style>
+<style scoped>
 .button {
   border: none;
+  padding: 0;
   margin: 10px;
   font-weight: bold;
   font-size: 2em;
@@ -192,13 +198,20 @@ export default {
   border-radius: 100%;
   background-color: #9ddad8;
   text-align: center;
+  cursor:pointer;
 }
 
 .counter {
   font-size: 2em;
-}
-.record {
+  margin: 10px;
+  width: 70px;
+  height: 70px;
+  border-radius: 100%;
+  line-height: 70px;
+  font-weight: bold;
   font-size: 2em;
-  color: #ff585d;
+  text-align: center;
+  background-color: #9ddad8;
+  display: inline-block;
 }
 </style>

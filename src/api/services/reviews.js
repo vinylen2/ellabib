@@ -16,4 +16,7 @@ export default {
   editReviewAudio(data) {
     return api.patch('reviews/audio/edit', data).then(response => response.data);
   },
+  incrementPlay(data) {
+    return api.patch('reviews/increment', data).then(response => response.data);
+  },
 };

@@ -13,7 +13,14 @@ export default {
   getFromIsbn(isbn) {
     return api.get(`books/isbn/${isbn}`).then(response => response.data);
   },
-  publishBookFromIsbn(isbn, genreId) {
+  getRecentlyReviewed() {
+    return api.get('books/recently/reviewed').then(response => response.data);
+  },
+  getHighestRated() {
+    return api.get('books/highest').then(response => response.data);
+  },
+  publishBookFromIsbn(rawIsbn, genreId) {
+    const isbn = rawIsbn.replace(/\D/g, '');
     return api.post('books/publish/isbn', { isbn, genreId }).then(response => response.data);
   },
   publishBookFromManualInput(isbn, genreId, title, pages, authorId, imageUrl) {
@@ -24,5 +31,8 @@ export default {
   },
   searchFromGenre(genre, queries) {
     return api.get(`books/genre/${genre}/search?query=${queries}`).then(response => response.data);
+  },
+  count() {
+    return api.get('books/count').then(response => response.data);
   },
 };

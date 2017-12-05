@@ -9,12 +9,13 @@
       <div class="book-description">
         <div>
           <h1>Beskrivning</h1>
-          <textarea class="publish-textarea"
+          <textarea class="publish-textarea review"
             v-model="review.description"
             placeholder="Skriv vad boken handlar om här.">
           </textarea>
         </div>
         <vue-record class="audio-recorder"
+          v-if="$store.getters.isDeviceWithMic"
           :source="'description'"
           @updateBlob="updateAudio"
           :blob="audio.description">
@@ -22,26 +23,34 @@
       </div>
       <div class="book-review">
         <h1>Recension</h1>
-        <textarea class="publish-textarea"
-          v-model="review.review" 
+        <textarea class="publish-textarea description"
+          v-model="review.review"
           placeholder="Skriv din bokrecension här.">
         </textarea>
         <vue-record class="audio-recorder"
+          v-if="$store.getters.isDeviceWithMic"
           :source="'review'"
           @updateBlob="updateAudio"
           :blob="audio.review">
         </vue-record>
       </div>
-      <div class="wrapper">
-        <div class="publish">
-          <star-rating :increment="1"
-              :max-rating="5"
-              inactive-color="#c2c7c9"
-              active-color="#c98bdb"
-              :star-size="30"
-              v-model="review.rating">
-          </star-rating>
-          <div class="publish-button" @click="postReview">Skicka</div>
+      <div class="publish flex-container column">
+        <star-rating :increment="1"
+            :max-rating="5"
+            inactive-color="#c2c7c9"
+            active-color="#c98bdb"
+            :star-size="30"
+            v-model="review.rating"
+            :show-rating="false">
+        </star-rating>
+        <button class="publish-button"
+          v-if="!publishing"
+          @click="postReview">Skicka
+        </button>
+        <div class="loading"
+          v-if="publishing">
+          <h2>Publicerar...</h2>
+          <sync-loader :color="'#71c5e8'"></sync-loader>
         </div>
       </div>
     </div>
@@ -51,16 +60,17 @@
 <script>
 /* es-lint disable*/
 import Books from '@/api/services/books';
-import Auth from '@/api/services/auth';
 import Reviews from '@/api/services/reviews';
 import StarRating from 'vue-star-rating';
 import VueRecord from '@/components/VueRecord';
+import SyncLoader from 'vue-spinner/src/SyncLoader';
 
 export default {
   name: 'publish-review',
   components: {
     'vue-record': VueRecord,
     'star-rating': StarRating,
+    SyncLoader,
   },
   props: ['book'],
   data() {
@@ -77,12 +87,12 @@ export default {
         description: '',
         review: '',
       },
+      publishing: false,
       published: false,
     };
   },
   created() {
     this.getData();
-    this.ipAuth();
   },
   computed: {
     reviewFormData() {
@@ -98,7 +108,6 @@ export default {
   },
   methods: {
     updateAudio(blob, source) {
-      console.log(blob);
       this.audio[source] = blob;
     },
     getData() {
@@ -117,23 +126,28 @@ export default {
         });
     },
     postReview() {
+      this.publishing = true;
       Reviews.create(this.reviewFormData)
         .then(() => {
           this.published = true;
-        });
-    },
-    ipAuth() {
-      Auth.ipAuth()
-        .then((result) => {
-          console.log(result);
-          console.log(document.cookie);
+          this.publishing = false;
         });
     },
   },
 };
 </script>
 
-<style>
+<style scoped>
+
+.container {
+  margin-top: 20px;
+}
+
+h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 15px 0;
+}
 h1 {
   font-size: 2em;
   font-weight: bold;
@@ -150,12 +164,14 @@ textarea {
 }
 
 .publish-button {
+  border:none;
+  padding: 0;
   width: 4em;
   height: 2em;
   font-weight: bold;
   font-size: 1.5em;
   line-height: 2em;
-  margin-top: 10px;
+  margin: 10px 0;
   background-color: #71c5e8;
   border-radius: 15px;
   text-align: center;
@@ -169,6 +185,10 @@ textarea {
   flex-wrap: wrap;
   justify-content:center;
   align-items:center;
+}
+
+.column {
+  flex-direction: column;
 }
 
 .flex-box {
@@ -185,5 +205,17 @@ textarea {
   display: inline-block;
 }
 
+.description {
+  background-color: #edd8f3;
+}
+
+.review {
+  background-color: #daf1f0;
+}
+
+.button {
+  border: none;
+  margin-right: 20px;
+}
 
 </style>

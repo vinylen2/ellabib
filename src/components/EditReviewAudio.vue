@@ -89,7 +89,6 @@ export default {
       return `${this.audioUrl}${url}`;
     },
     updateData(blob, source) {
-      console.log(blob);
       this.local.isCut[source] = true;
       const dataUrl = URL.createObjectURL(blob);
       this.local.audio[source] = dataUrl;
@@ -106,10 +105,10 @@ export default {
     },
     editReview() {
       Reviews.editReviewAudio(this.reviewFormData)
-        .then((result) => {
-          console.log(result);
+        .then(() => {
           this.closeModal();
-        }).catch(e => console.log(e));
+        });
+        // }).catch(e => console.log(e));
     },
   },
 };

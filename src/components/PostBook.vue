@@ -1,8 +1,8 @@
 <template>
   <div class="postbook-container">
     <div class="genre-search">
-      <div v-for="genre in genres" class="genre">
-        <img class="genre-icon" 
+      <div v-for="genre in $store.state.genres" class="genre">
+        <img class="genre-icon"
           v-on:click="toggleselectedGenre(genre)"
           v-bind:class="{ selectedGenre: selectedGenre == genre }"
           :src="`${imagesUrl}${genre.slug}.png`"/>
@@ -152,6 +152,9 @@
     <div class="published-message"
       v-if="posted">Bok tillagd.
     </div>
+    <div class="published-message"
+      v-if="error">{{errorMessage}}
+    </div>
   </div>
 </template>
 
@@ -199,7 +202,6 @@ export default {
         firstname: '',
         lastname: '',
       },
-      genres: [],
       authors: [],
       manualData: {
         title: '',
@@ -209,11 +211,15 @@ export default {
       manualPost: false,
       posted: false,
       imagesUrl: Urls.images,
+      error: false,
+      errorMessage: '',
     };
   },
   created() {
     this.$nextTick(() => {
-      this.getGenres();
+      if (this.$store.state.genres.length === 0) {
+        this.getGenres();
+      }
     });
   },
   methods: {
@@ -268,12 +274,16 @@ export default {
         this.selectedGenre = genre;
       }
     },
-    bookPosted() {
+    bookPosted(book) {
       this.posted = true;
+      this.selectedGenre = '';
       this.manualData.title = '';
       this.manualData.pages = '';
-      this.isbn = '';
       this.manualPost = false;
+      this.error = false;
+      this.isbn = '';
+      this.$validator.reset();
+      this.$store.commit('toggleQr', { title: book.data.title, slug: book.data.slug, id: book.data.id });
     },
     barcodeScanner() {
       window.cordova.plugins.barcodeScanner.scan((result) => {
@@ -281,27 +291,26 @@ export default {
         this.publishBookFromIsbn(result.text, this.genreId).then(() => {
           this.bookPosted();
         });
-      }, (error) => {
-        alert(`Scanning failed: ${error}`);
+      }, () => {
+        // alert(`Scanning failed: ${error}`);
       });
     },
     publishBookFromIsbn(isbn, genreId) {
+      this.posted = false;
       Books.publishBookFromIsbn(isbn, genreId)
         .then((result) => {
-          console.log(result);
           if (!result.added) {
-            console.log(result.message);
+            this.error = true;
+            this.errorMessage = result.message;
           } else {
-            this.bookPosted();
+            this.bookPosted(result);
           }
         });
     },
     publishBookFromManualInput(isbn, genreId, title, pages, authorId, imageUrl) {
-      console.log('publishing');
       Books.publishBookFromManualInput(isbn, genreId, title, pages, authorId, imageUrl)
         .then((result) => {
-          console.log(result);
-          this.bookPosted();
+          this.bookPosted(result);
         });
     },
     postAuthor(firstname, lastname) {
@@ -316,7 +325,7 @@ export default {
     getGenres() {
       Genres.getAll()
         .then((result) => {
-          this.genres = result.data;
+          this.$store.commit('genres', result.data);
         });
     },
     getAuthors() {

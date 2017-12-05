@@ -1,28 +1,28 @@
 <template>
   <div class="editor">
     <div class="menu">
-      <div class="button"
+      <button class="button"
         v-if="!isPlaying"
-        @click="play"
-        v-html="unicodeIcons.play">
-      </div>
-      <div class="button"
+        @click="play"><icon name="play" scale="2"></icon>
+      </button>
+      <button class="button"
         v-if="isPlaying"
-        @click="pause">P
-      </div>
-      <div class="button time"
+        @click="pause"><icon name="pause" scale="2"></icon>
+      </button>
+      <div class="time"
         v-show="isEditing">
         {{roundedTime}}
       </div>
-      <div class="button edit"
-        v-html="unicodeIcons.edit"
-        @click="cutBlob">
-      </div>
-      <div class="button undo"
+      <button class="button"
+        @click="cutBlob"><icon name="scissors" scale="2"></icon>
+      </button>
+      <button class="button"
         v-if="history.length > 0"
-        v-html="unicodeIcons.undo"
-        @click="undoSlice">
-      </div>
+        @click="undoSlice"><icon name="undo" scale="2"></icon>
+      </button>
+      <button class="button"
+        @click="trashRecording"><icon name="trash-o" scale="2"></icon>
+      </button>
     </div>
     <div class="waveform"
       :id="waveformId"
@@ -36,11 +36,15 @@
 import WaveSurfer from 'wavesurfer.js';
 import audioBufferSlice from 'audiobuffer-slice';
 import toWav from 'audiobuffer-to-wav';
+import Icon from 'vue-awesome';
 // eslint-disable-next-line no-use-before-define
 import RegionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions';
 
 export default {
   name: 'audio-editor',
+  components: {
+    Icon,
+  },
   data() {
     return {
       wavesurfer: null,
@@ -50,11 +54,6 @@ export default {
         length: '',
       },
       isPlaying: false,
-      unicodeIcons: {
-        edit: '&#x2702;',
-        play: '&#9658;',
-        undo: '&#8634;',
-      },
     };
   },
   props: {
@@ -81,6 +80,9 @@ export default {
     });
   },
   methods: {
+    trashRecording() {
+      this.$emit('trashRecording');
+    },
     resetWavesurfer() {
       this.wavesurfer.destroy();
       this.initiateWavesurfer();
@@ -95,12 +97,13 @@ export default {
     },
     newSlice(start, end) {
       audioBufferSlice(this.wavesurfer.backend.buffer, start, end, (error, sliced) => {
-        if (error) {
-          console.log(error);
-        } else {
-          this.history.push(this.wavesurfer.backend.buffer);
-          this.audiobufferToWav(sliced);
-        }
+        this.history.push(this.wavesurfer.backend.buffer);
+        this.audiobufferToWav(sliced);
+        // if (error) {
+        // } else {
+        //   this.history.push(this.wavesurfer.backend.buffer);
+        //   this.audiobufferToWav(sliced);
+        // }
       });
     },
     audiobufferToWav(buffer) {
@@ -161,29 +164,39 @@ export default {
 
 </script>
 
-<style scoped>
+<style>
+
+.waveform .wavesurfer-handle {
+  background-color: grey;
+  width: 15%;
+  max-width: 50px;
+}
 
 .button {
+  border:none;
+  padding: 0;
+  font-weight: bold;
+  width: 70px;
+  height: 70px;
+  border-radius: 100%;
+  background-color: #9ddad8;
+  text-align: center;
+  cursor: pointer;
+}
+
+.time {
   margin: 10px;
   font-weight: bold;
-  font-size: 2em;
-  line-height: 70px;
   width: 70px;
   height: 70px;
   border-radius: 100%;
   background-color: #9ddad8;
   text-align: center;
   display: inline-block;
+  font-size: 2em;
+  line-height: 70px;
 }
 
-.time {
-  font-size: 2em;
-}
-.wavesurfer-handle {
-  background-color: grey;
-  width: 10%;
-  max-width: 50px;
-}
 
 .editor {
   font-size: 0.8em;

@@ -3,10 +3,13 @@
     <div class="scan-area"
       ref="scanner">
     </div>
-    <div class="scan button"
+    <qrcode-reader @decode="onDecode">
+
+    </qrcode-reader>
+    <!-- <div class="scan button"
       v-if="isDeviceWithWebRTC"
       @click="quaggaScanner">Scanna
-    </div>
+    </div> -->
     <!-- <div class="scan button"
       v-if="isCordovaApp"
       @click="barcodeScanner">Scanna
@@ -24,9 +27,14 @@
 <script>
 import Books from '@/api/services/books';
 import Quagga from 'quagga';
+import VueQrcodeReader from 'vue-qrcode-reader';
+
 
 export default {
   name: 'scanner',
+  components: {
+    'qrcode-reader': VueQrcodeReader,
+  },
   computed: {
     isDeviceWithWebRTC() {
       return this.$store.getters.isDeviceWithWebRTC;
@@ -53,8 +61,7 @@ export default {
       }, (err) => {
         if (err) {
           // variable for error msg on screen here
-          console.log(err);
-          return;
+          // console.log(err);
         }
         Quagga.start();
         Quagga.onDetected((result) => {
@@ -69,6 +76,15 @@ export default {
         });
       });
     },
+    onDecode(content) {
+      this.getBookFromIsbn(content)
+        .then((slug) => {
+          this.$router.push(`/book/${slug}`);
+        })
+        .catch(() => {
+          this.scanned = false;
+        });
+    },
     barcodeScanner() {
       this.scanned = true;
       window.cordova.plugins.barcodeScanner.scan((result) => {
@@ -79,8 +95,8 @@ export default {
           .catch(() => {
             this.scanned = false;
           });
-      }, (error) => {
-        alert(`Scanning failed: ${error}`);
+      }, () => {
+        // alert(`Scanning failed: ${error}`);
       });
     },
     getBookFromIsbn(isbn) {

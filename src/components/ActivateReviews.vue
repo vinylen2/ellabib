@@ -77,12 +77,12 @@
     <div class="buttons"
       v-if="reviews.length > 0">
       <a class="addAll-button"
-        v-if="!selectedForActivation.length == reviews.length"
-        @click="addAllReviewsForActivation">Markera alla ({{reviews.length}})
-      </a>
-      <a class="addAll-button"
         v-if="selectedForActivation.length == reviews.length"
         @click="removeAllReviewsForActivation">Avmarkera alla ({{reviews.length}})
+      </a>
+      <a class="addAll-button"
+        v-else
+        @click="addAllReviewsForActivation">Markera alla ({{reviews.length}})
       </a>
       <a class="publish-button"
         @click="activateReviews">Spara ({{selectedForActivation.length}})
@@ -205,6 +205,10 @@ export default {
 </script>
 
 <style scoped>
+
+.container {
+  margin-top: 20px;
+}
 
 hr {
   margin: 25px 0;
