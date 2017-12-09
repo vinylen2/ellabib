@@ -108,7 +108,7 @@ router.beforeEach((to, from, next) => {
 
 Vue.use(VueAnalytics, {
   // id: 'UA-110562368-1', // demo
-  id: 'UA-110562368-2', // real
+  id: 'UA-110562368-3', // real
   router,
   autoTracking: {
     pageviewTemplate(route) {

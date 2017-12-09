@@ -70,6 +70,10 @@ div {
   display: inline-block;
 }
 
+button:focus {
+  outline: none;
+}
+
 p {
   margin-bottom: 5px;
 }

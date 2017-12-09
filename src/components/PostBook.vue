@@ -465,6 +465,4 @@ input {
   margin: 10px 0;
 }
 
-.plus {
-}
 </style>

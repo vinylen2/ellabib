@@ -45,6 +45,7 @@
 import Vue from 'vue';
 import StarRating from 'vue-star-rating';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
+import Urls from '@/assets/urls';
 
 require('swiper/dist/css/swiper.css');
 
@@ -58,6 +59,7 @@ export default {
   },
   data() {
     return {
+      imagesUrl: Urls.images,
       swiperOptions: {
         nextButton: '.swiper-button-next',
         prevButton: '.swiper-button-prev',

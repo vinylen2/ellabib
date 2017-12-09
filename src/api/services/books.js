@@ -35,4 +35,8 @@ export default {
   count() {
     return api.get('books/count').then(response => response.data);
   },
+  edit(data) {
+    return api.patch('books/edit', data)
+      .then(response => response.data);
+  },
 };

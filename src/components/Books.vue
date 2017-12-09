@@ -128,11 +128,10 @@ export default {
         eventLabel: genre.name,
       });
     },
-    gaSearch(term) {
+    gaSearch() {
       this.$ga.event({
         eventCategory: 'Leta böcker',
         eventAction: 'Sökning',
-        eventLabel: term,
       });
     },
     incrementPage() {
@@ -168,7 +167,7 @@ export default {
             this.$store.commit('books', result.data);
           });
       } else {
-        this.gaSearch(this.searchTerm);
+        this.gaSearch();
         Books.search(this.searchTerm)
           .then((result) => {
             this.$store.commit('books', result.data);

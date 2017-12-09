@@ -49,12 +49,14 @@ a {
   font-size: 1.5em;
   text-decoration: none;
   line-height:60px;
+  cursor: pointer;
 }
 
 a:hover {
   color: black;
   font-weight: bold;
 }
+
 
 @media print {
   .admin-nav {

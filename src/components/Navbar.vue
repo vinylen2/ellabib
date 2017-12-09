@@ -10,10 +10,10 @@
     <router-link to="/about">Om</router-link>
     <div class="admin">
       <router-link to ="/admin"
-        v-show="isAdmin"><icon name="cog" scale="2"></icon></router-link>
+        v-show="isAdmin"><icon name="cog" scale="2" color="#2c3e50"></icon></router-link>
       <div class="login"
         v-show="isAdmin"
-        @click="logout"><icon name="sign-out" scale="2"></icon></div>
+        @click="logout"><icon name="sign-out" scale="2" color="#2c3e50"></icon></div>
     </div>
   </div>
 </template>
@@ -42,8 +42,8 @@ export default {
   methods: {
     logout() {
       Auth.logout();
+      this.$router.push({ name: 'frontpage' });
       this.$store.commit('changeAdminState');
-      this.$router.push({ name: '/books' });
     },
     ipAuth() {
       Auth.ip()

@@ -2,7 +2,7 @@
   <div class="container">
     <h1>Ellabib</h1>
     <div class="text">
-      <p>Ellabib är en app för Ellagårdsskolans bibliotek. Här hittar ni bokrecensioner skrivna och upplästa av våra elever.</p>
+      <p>Ellabib är en hemsida för Ellagårdsskolans bibliotek. Här hittar ni bokrecensioner skrivna och upplästa av våra elever.</p>
       <h2>Källor</h2>
       <p>Informationen om böckerna kommer från <a href="https://bokhavet.se/api">Bokhavets API</a>.</p>
     </div>

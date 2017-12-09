@@ -5,6 +5,17 @@
         <a class="admin-anchor"
           @click="editBook">Ändra bokinfo
         </a>
+        <modal name="edit-book"
+          :height="350">
+          <edit-book
+            @leaveModal="leaveModal"
+            :bookId="currentBook.id"
+            :author="author"
+            :genre="genre"
+            :title="currentBook.title"
+            :pages="currentBook.pages">
+          </edit-book>
+        </modal>
         <a class="admin-anchor"
           @click="$store.commit('toggleQr', {
               title: currentBook.title,
@@ -32,8 +43,8 @@
             <!-- To-do: link to page with books from author -->
              <p class="author">av:
                <router-link class="authorlink"
-                :to="{ name: 'books', params: { forceSearch: author.name }}">
-                {{author.name }}
+                :to="{ name: 'books', params: { forceSearch: author.fullName }}">
+                {{author.fullName }}
                </router-link>
              </p>
           </header>
@@ -137,15 +148,22 @@ import Books from '@/api/services/books';
 import Reviews from '@/api/services/reviews';
 import Urls from '@/assets/urls';
 import AudioPlayer from '@/components/AudioPlayer';
+import EditBook from '@/components/EditBook';
 import StarRating from 'vue-star-rating';
+
+import Vue from 'vue';
 import moment from 'moment';
+import VModal from 'vue-js-modal';
 import _ from 'lodash';
 import Icon from 'vue-awesome';
 import 'moment/locale/sv';
 
+Vue.use(VModal);
+
 export default {
   components: {
     'audio-player': AudioPlayer,
+    EditBook,
     StarRating,
     Icon,
   },
@@ -157,7 +175,7 @@ export default {
       randomDescription: {},
       currentBook: {},
       author: {
-        name: '',
+        fullName: '',
         id: null,
       },
       pausePlayer: {
@@ -194,7 +212,16 @@ export default {
     //   this.pausePlayer.id += data.id;
     // },
     editBook() {
-      // console.log('edit');
+      this.$modal.show('edit-book');
+    },
+    leaveModal(data) {
+      if (data) {
+        this.currentBook.title = data.title;
+        this.currentBook.pages = data.pages;
+        this.author = data.author;
+        this.genre = data.genre;
+      }
+      this.$modal.hide('edit-book');
     },
     formattedAudioUrl(endingOfUrl) {
       return [this.audioUrl + endingOfUrl];
@@ -222,8 +249,8 @@ export default {
           }
           this.currentBook = result.data;
           this.genre = result.data.genres[0];
-          if (this.author.name) {
-            this.author.name = `${result.data.authors[0].firstname} ${result.data.authors[0].lastname}`;
+          if (result.data.authors.length > 0) {
+            this.author.fullName = `${result.data.authors[0].firstname} ${result.data.authors[0].lastname}`;
             this.author.id = result.data.authors[0].id;
           }
         });
@@ -416,6 +443,7 @@ h2 {
 }
 
 .review-a {
+  margin-left: 5px;
   text-decoration: none;
 }
 

@@ -7,6 +7,7 @@
         </div>
         <div class="flex-right">
             <input v-model="username"
+            autofocus
             placeholder="Användarnamn">
         </div>
         <div class="flex-left-modal">
@@ -91,6 +92,10 @@ export default {
   text-align: center;
   cursor: pointer;
   display: inline-block;
+}
+
+input:focus {
+  outline: none;
 }
 
 .modal-menu {

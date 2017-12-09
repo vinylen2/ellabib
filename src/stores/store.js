@@ -77,7 +77,7 @@ export default new Vuex.Store({
       state.highestRatedBooks = data;
     },
     addQrArray: (state, data) => {
-      state.qrArray = _.flatten([data, data]);
+      state.qrArray = data;
     },
     toggleQr: (state, data) => {
       const index = _.findIndex(state.qrArray, { id: data.id });

@@ -51,6 +51,7 @@ export default {
     something() {
       if (this.something > 0.3 && !this.played) {
         this.gaPlay();
+        this.incrementCounter();
         this.played = true;
       }
     },
