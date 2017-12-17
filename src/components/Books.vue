@@ -6,7 +6,7 @@
     </div>
     <div class="genre-search" v-else>
       <a v-for="genre in $store.state.genres" class="genre tooltip"
-        v-tooltip.bottom="genre.name">
+        v-tooltip.bottom="{ content: genre.name, classes: 'genre-tooltip'}">
         <img class="genre-icon"
           @click="toggleSelected(genre); gaGenre(genre);"
           v-bind:class="{ selected: selected == genre }"
@@ -201,7 +201,7 @@ export default {
 .loading {
   margin: 50px;
 }
-.tooltip .tooltip-inner {
+.genre-tooltip {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   background-color: #71c5e8;
   padding: 5px 10px;

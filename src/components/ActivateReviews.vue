@@ -5,94 +5,115 @@
       @before-open="loadDataAudioModal">
         <edit-review-audio
           @close="closeAudioModal"
-          :review="modalReview">
+          :review="modal.review">
         </edit-review-audio>
     </modal>
-    <div v-for="review in reviews" class="reviews">
-      <div class="flex-container">
-        <div class="image">
-          <img class="front-img"
-            v-if="review.books[0].localImage"
-            :src="`${imagesUrl}${review.books[0].imageUrl}`">
-          <img class="front-img"
-            v-if="!review.books[0].localImage"
-            :src="review.books[0].imageUrl">
+    <modal name="edit-text"
+      :height="380"
+      @before-open="loadDataTextModal">
+      <edit-review-text
+        @closeTextModal="closeTextModal"
+        :text="modal.text"
+        :type="modal.type"
+        :reviewId="modal.reviewId">
+      </edit-review-text>
+    </modal>
+    <modal name="alert"
+      @before-open="loadDataAlertModal"
+      :height="200">
+      <alert-window
+        :action="modal.action"
+        :value="modal.value"
+        @closed="closeAlertModal">
+      </alert-window>
+    </modal>
+    <vuetable ref="vuetable"
+      :api-mode="false"
+      :fields="fields"
+      :data="reviews">
+      <template slot="title"
+        scope="props">
+        <router-link class="link" :to="{ name: 'bok', params: { slug: props.rowData.slug }}">{{props.rowData.title}}</router-link>
+      </template>
+      <template slot="rating"
+        scope="props">
+        <star-rating v-bind:read-only="false"
+            v-bind:max-rating="5"
+            inactive-color="#c2c7c9"
+            active-color="#c98bdb"
+            v-bind:star-size="20"
+            :increment="1"
+            :show-rating="false"
+            @rating-selected="setRating($event, props.rowData.id)"
+            v-model="props.rowData.rating">
+        </star-rating>
+      </template>
+      <template slot="edit-description"
+        scope="props">
+        <div class="text"
+          v-if="props.rowData.description"
+          @click="showEditTextModal('description', props.rowData.id, props.rowData.description)"
+          v-tooltip.bottom="{ content: props.rowData.description, classes: 'text-tooltip' }">
+          {{`${props.rowData.description.slice(0, 30)}...`}}
         </div>
-        <div>
-          <div class="text-container">
-            <h1>{{ review.books[0].title }}</h1> 
-            <div class="review-header flex-container">
-              <!-- To-do: link to page for reviewer -->
-              <div class="review-title">
-                <span>Publicerad den {{ formattedDate(review.createdAt) }} &nbsp;</span>
-              </div>
-              <star-rating class="review-rating"
-                v-bind:read-only="true"
-                v-bind:max-rating="5"
-                inactive-color="#c2c7c9"
-                active-color="#c98bdb"
-                v-bind:star-size="20"
-                v-model="review.rating">
-              </star-rating>
-            </div>
-            <div class="description-body">
-              <h2>Beskrivning:</h2>
-              <textarea class="disabled-textarea"
-                v-model="review.description">{{review.description}}</textarea>
-             <audio-player class="audio-player small" 
-                :sources="formattedAudioUrl(review.descriptionAudioUrl)">
-              </audio-player>
-            </div>
-          </div>
-          <div class="text-container">
-            <div class="review-body">
-              <h2>Recension:</h2>
-              <textarea class="disabled-textarea"
-                v-model="review.review">{{review.review}}</textarea>
-              <audio-player class="audio-player small" 
-                :sources="formattedAudioUrl(review.reviewAudioUrl)">
-              </audio-player>
-            </div>
-          </div>
+        <div class="no-text text"
+          @click="showEditTextModal('description', props.rowData.id, props.rowData.description)"
+          v-else>
+          Ingen beskrivning.
         </div>
-      </div>
-      <div class="buttons">
+      </template>
+      <template slot="edit-review"
+        scope="props">
+        <div class="text"
+          v-if="props.rowData.review"
+          @click="showEditTextModal('review', props.rowData.id, props.rowData.review)"
+          v-tooltip.bottom="{ content: props.rowData.review, classes: 'text-tooltip' }">
+          {{`${props.rowData.review.slice(0, 30)}...`}}
+        </div>
+        <div class="no-text text"
+          @click="showEditTextModal('review', props.rowData.id, props.rowData.review)"
+          v-else>
+          Ingen recension.
+        </div>
+      </template>
+      <template slot="description-audio"
+        scope="props">
+        <admin-audio-player
+          v-if="props.rowData.descriptionAudioUrl"
+          :type="'description'"
+          :rowData="props.rowData">
+        </admin-audio-player>
+        <div class="no-audio"
+          v-else><icon name="microphone-slash" scale="1"></icon>
+        </div>
+      </template>
+      <template slot="review-audio"
+        scope="props">
+        <admin-audio-player
+          v-if="props.rowData.reviewAudioUrl"
+          :type="'review'"
+          :rowData="props.rowData">
+        </admin-audio-player>
+        <div class="no-audio"
+          v-else><icon name="microphone-slash" scale="1"></icon>
+        </div>
+      </template>
+      <template slot="edit-audio"
+        scope="props">
         <div class="button-2 edit"
-          @click="editAudioModal(review)"
-          v-html="unicodeIcons.edit">
+          v-if="props.rowData.reviewAudioUrl || props.rowData.descriptionAudioUrl"
+          @click="editAudioModal(props.rowData)"><icon name="cut" scale="1"></icon>
         </div>
-        <div class="button-2 accept"
-          v-if="!review.active"
-          @click="toggleAccepted(review)"
-          v-html="unicodeIcons.empty">
+        <div class="button-2 delete"
+          @click="showAlertModal(`Radera recension för ${props.rowData.title}`,(props.rowData.id))"><icon name="trash" scale="1"></icon>
         </div>
-        <div class="button-2 removeAccept"
-          v-if="review.active"
-          @click="toggleAccepted(review)"
-          v-html="unicodeIcons.accepted">
-        </div>
-      </div>
-      <hr>
-    </div>
+      </template>
+    </vuetable>
     <div class="buttons"
       v-if="reviews.length > 0">
-      <a class="addAll-button"
-        v-if="selectedForActivation.length == reviews.length"
-        @click="removeAllReviewsForActivation">Avmarkera alla ({{reviews.length}})
-      </a>
-      <a class="addAll-button"
-        v-else
-        @click="addAllReviewsForActivation">Markera alla ({{reviews.length}})
-      </a>
       <a class="publish-button"
-        @click="activateReviews">Spara ({{selectedForActivation.length}})
+        @click="activateReviews">Publicera ({{this.$refs.vuetable.selectedTo.length}})
       </a>
-    </div>
-    <div class="no-reviews"
-      v-if="reviews.length == 0">
-      <h1>
-        Inga recensioner väntar på att bli aktiverade
-      </h1>    
     </div>
   </div>
 </template>
@@ -103,34 +124,49 @@ import Vue from 'vue';
 import Reviews from '@/api/services/reviews';
 import Urls from '@/assets/urls';
 import StarRating from 'vue-star-rating';
-import AudioPlayer from '@/components/AudioPlayer';
+import AdminAudioPlayer from '@/components/AdminAudioPlayer';
 import EditReviewAudio from '@/components/EditReviewAudio';
+import EditReviewText from '@/components/EditReviewText';
+import AlertWindow from '@/components/AlertWindow';
+import FieldDefs from '@/components/FieldDefs';
 import moment from 'moment';
 import _ from 'lodash';
+import Icon from 'vue-awesome';
 import VModal from 'vue-js-modal';
 import 'moment/locale/sv';
+import Vuetable from 'vuetable-2';
+import { VTooltip } from 'v-tooltip';
 
 Vue.use(VModal);
+Vue.use(Vuetable);
+Vue.directive('tooltip', VTooltip);
+Vue.component('v-popover', VTooltip.VPopover);
 
 export default {
   components: {
-    AudioPlayer,
+    'admin-audio-player': AdminAudioPlayer,
+    Vuetable,
     StarRating,
+    Icon,
     EditReviewAudio,
+    EditReviewText,
+    AlertWindow,
   },
   data() {
     return {
+      fields: FieldDefs,
       reviews: [],
-      modalReview: '',
-      modalText: '',
+      modal: {
+        review: '',
+        text: '',
+        reviewId: '',
+        type: '',
+        action: '',
+        value: '',
+      },
       imagesUrl: Urls.images,
       audioUrl: Urls.audio,
       selectedForActivation: [],
-      unicodeIcons: {
-        accepted: '&#10004;',
-        empty: '&nbsp;',
-        edit: '&#x2702',
-      },
     };
   },
   created() {
@@ -139,49 +175,56 @@ export default {
     });
   },
   methods: {
-    removeAllReviewsForActivation() {
-      this.selectedForActivation = [];
-      this.reviews.forEach((review) => {
-        review.active = false;
-      });
+    img(data) {
+      if (data.localImage) {
+        return `<img src="${this.imagesUrl}${data.imageUrl} class="small">`;
+      }
+      return data.imageUrl;
     },
-    addAllReviewsForActivation() {
-      this.selectedForActivation = this.reviews;
-      this.reviews.forEach((review) => {
-        review.active = true;
-      });
-    },
-    closeAudioModal() {
-      this.popReview(1);
-      this.$modal.hide('edit-review-audio-modal');
-    },
-    popReview(poppedId) {
-      const newList = _.remove(this.reviews, (review =>
-        review.id !== poppedId
-      ));
-      this.reviews = newList;
+    setRating(rating, id) {
+      this.updateReviewRating(rating, id);
     },
     editAudioModal(review) {
       this.$modal.show('edit-review-audio-modal', { review });
     },
-    loadDataAudioModal(event) {
-      this.modalReview = event.params.review;
+    closeAudioModal() {
+      this.$modal.hide('edit-review-audio-modal');
     },
-    toggleActivationArray(review) {
-      const arrayIndex = _.findIndex(this.selectedForActivation, { id: review.id });
-      if (arrayIndex === -1) {
-        this.selectedForActivation.push(review);
-      } else {
-        this.selectedForActivation.splice(arrayIndex, 1);
+    showEditTextModal(type, reviewId, text) {
+      this.$modal.show('edit-text', { type, reviewId, text });
+    },
+    showAlertModal(action, value) {
+      this.$modal.show('alert', { action, value });
+    },
+    closeAlertModal(data) {
+      if (data.status) {
+        this.deleteReview(data.value);
       }
+      this.$modal.hide('alert');
     },
-    toggleAccepted(selectedElement) {
-      this.reviews.forEach((review) => {
-        if (review.id === selectedElement.id) {
-          review.active = !review.active;
+    closeTextModal(data) {
+      if (data) {
+        const index = _.findIndex(this.reviews, { id: data.reviewId });
+        const arrayData = this.reviews[index];
+        if (data.type === 'review') {
+          arrayData.review = data.text;
+        } else {
+          arrayData.description = data.text;
         }
-      });
-      this.toggleActivationArray(selectedElement);
+      }
+      this.$modal.hide('edit-text');
+    },
+    loadDataAudioModal(event) {
+      this.modal.review = event.params.review;
+    },
+    loadDataTextModal(event) {
+      this.modal.text = event.params.text;
+      this.modal.reviewId = event.params.reviewId;
+      this.modal.type = event.params.type;
+    },
+    loadDataAlertModal(event) {
+      this.modal.action = event.params.action;
+      this.modal.value = event.params.value;
     },
     formattedDate(date) {
       return moment(date).format('Do MMMM');
@@ -194,18 +237,93 @@ export default {
         this.reviews = result.data;
       });
     },
+    popReview(reviewId) {
+      const index = _.findIndex(this.reviews, { id: reviewId });
+      this.reviews.splice(index, 1);
+    },
     activateReviews() {
-      Reviews.bulkActivate({ reviews: this.selectedForActivation }).then(() => {
-        this.selectedForActivation = '';
+      Reviews.bulkActivate(this.$refs.vuetable.selectedTo).then(() => {
         this.getReviews();
+      });
+    },
+    updateReviewRating(rating, id) {
+      Reviews.updateRating({ reviewId: id, rating }).then(() => {
+      });
+    },
+    deleteReview(reviewId) {
+      Reviews.deleteReview({ reviewId }).then(() => {
+        this.popReview(reviewId);
       });
     },
   },
 };
 </script>
 
-<style scoped>
+<style>
+.text-tooltip .tooltip-inner{
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  background-color: #addb91;
+  padding: 10px 15px;
+  width: 300px;
+  border-radius: 20px;
+}
 
+table {
+  border-spacing: 10px;
+  border-collapse: separate;
+}
+th {
+  font-weight: bold;
+}
+
+.th-buttons {
+  width: 100px;
+}
+
+.th-text {
+  width: 250px;
+}
+
+.th-date {
+  width: 100px;
+}
+
+.left {
+  text-align: left;
+}
+
+</style>
+<style scoped>
+.link {
+  text-decoration: none;
+  color: #2c3e50;
+}
+
+.link:visited {
+  color: #2c3e50;
+}
+
+.link:hover {
+  color: black;
+  text-decoration: none;
+}
+
+.no-text {
+  font-weight: bold;
+  color: #ff585d;
+}
+.buttons {
+  margin-top: 15px;
+}
+
+.text:hover {
+  cursor: pointer;
+  color: black;
+}
+.vuetable {
+  display: inline-block;
+
+}
 .container {
   margin-top: 20px;
 }
@@ -216,14 +334,18 @@ hr {
 .button-2 {
   display: inline-block;
   font-weight: bold;
-  font-size: 2em;
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
+  font-size: 1em;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
   border-radius: 100%;
   background-color: #addb91;
   text-align: center;
   cursor: pointer;
+}
+
+.delete {
+  background-color: #ff585d;
 }
 
 .modal-button-2 {

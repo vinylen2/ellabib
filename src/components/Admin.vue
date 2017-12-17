@@ -2,7 +2,7 @@
   <div>
     <div class="admin-nav">
       <router-link to="/admin/post-book">Lägg till bok</router-link>
-      <router-link to="/admin/activate-reviews">Aktivera</router-link>
+      <router-link to="/admin/activate-reviews">Recensioner</router-link>
       <router-link to="/admin/qr-codes">QR ({{$store.state.qrArray.length}})</router-link>
       <a @click="addAllQr">
         QR för alla böcker

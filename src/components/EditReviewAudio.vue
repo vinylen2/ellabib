@@ -22,7 +22,7 @@
     :isEditing="true">
   </audio-editor>
   <div class="button float save-activate"
-    @click="saveAndClose">Aktivera
+    @click="saveAndClose">Spara
   </div>
   <div class="button float close"
     @click="closeModal">Stäng

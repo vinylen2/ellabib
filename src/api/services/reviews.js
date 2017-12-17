@@ -19,4 +19,13 @@ export default {
   incrementPlay(data) {
     return api.patch('reviews/increment', data).then(response => response.data);
   },
+  updateRating(data) {
+    return api.patch('reviews/rating', data).then(response => response.data);
+  },
+  updateText(data) {
+    return api.patch('reviews/text', data).then(response => response.data);
+  },
+  deleteReview(data) {
+    return api.patch('reviews/delete', data).then(response => response.data);
+  },
 };

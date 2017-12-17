@@ -1,16 +1,33 @@
 <template>
   <div>
-    <button class="button pause"
-      v-if="playing"
-      @click="togglePlayback"><icon name="pause" scale="2"></icon>
-    </button>
-    <button class="button"
-      v-else
-      @click="togglePlayback();"><icon name="play" scale="2"></icon>
-    </button>
-    <button class="button"
-      @click="reset();"><icon name="fast-backward" scale="2"></icon>
-    </button>
+    <div class="book"
+      v-if="admin">
+      <button class="admin-button pause"
+        v-if="playing"
+        @click="togglePlayback"><icon name="pause" scale="1"></icon>
+      </button>
+      <button class="admin-button"
+        v-else
+        @click="togglePlayback"><icon name="play" scale="1"></icon>
+      </button>
+      <button class="admin-button"
+        @click="reset"><icon name="fast-backward" scale="1"></icon>
+      </button>
+    </div>
+    <div class="admin"
+      v-else>
+      <button class="button pause"
+        v-if="playing"
+        @click="togglePlayback"><icon name="pause" scale="2"></icon>
+      </button>
+      <button class="button"
+        v-else
+        @click="togglePlayback();"><icon name="play" scale="2"></icon>
+      </button>
+      <button class="button"
+        @click="reset();"><icon name="fast-backward" scale="2"></icon>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -24,7 +41,10 @@ export default {
   components: {
     Icon,
   },
-  props: ['audioInfo'],
+  props: [
+    'audioInfo',
+    'admin',
+  ],
   data() {
     return {
       played: false,
@@ -37,7 +57,7 @@ export default {
     };
   },
   computed: {
-    something() {
+    playDuration() {
       return this.seek / this.duration;
     },
     gaCategory() {
@@ -48,8 +68,8 @@ export default {
     },
   },
   watch: {
-    something() {
-      if (this.something > 0.3 && !this.played) {
+    playDuration() {
+      if (this.something > 0.3 && !this.played && !this.admin) {
         this.gaPlay();
         this.incrementCounter();
         this.played = true;
@@ -100,6 +120,19 @@ export default {
   cursor: pointer;
 }
 
+.admin-button {
+  border: none;
+  margin-right:5px;
+  font-weight: bold;
+  width: 30px;
+  height: 30px;
+  border-radius: 100%;
+  background-color: #9ddad8;
+  text-align: center;
+  display: table-cell;
+  vertical-align: middle;
+  cursor: pointer;
+}
 .small a {
   width: 40px;
   height: 40px;
@@ -110,7 +143,4 @@ export default {
   background-color: #71c5e8;
 }
 
-.pause {
-  font-size: 2em;
-}
 </style>
